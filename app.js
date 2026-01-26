@@ -108,7 +108,7 @@ document.getElementById("transferForm").addEventListener("submit", async (e) => 
 async function carregarDados() {
   showMessage("Carregando dados...", "loading");
 
-  const { data, error } = await supabase
+  const { data, error } = await supabaseClient
     .from("transferencias")
     .select("*")
     .order("created_at", { ascending: false });
