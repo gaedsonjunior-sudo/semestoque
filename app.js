@@ -1,16 +1,14 @@
+// ================== VARIÁVEIS GLOBAIS ==================
+let acaoPendente = null;
+let itemIdPendente = null;
+let todosOsDados = [];
+
 // ================== TABS ==================
-function showTab(tabId) {
+window.showTab = function(tabId) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
 
-  // Correção na seleção da tab ativa
-  const tabs = document.querySelectorAll(".tab");
-  tabs.forEach(tab => {
-    if (tab.getAttribute('onclick').includes(tabId)) {
-      tab.classList.add("active");
-    }
-  });
-  
+  document.querySelector(`.tab[onclick*="${tabId}"]`).classList.add("active");
   document.getElementById(tabId).classList.add("active");
   
   if (tabId === 'visualizar') {
@@ -19,7 +17,7 @@ function showTab(tabId) {
 }
 
 // ================== MODAL MENSAGEM ==================
-function showMessage(text, type) {
+window.showMessage = function(text, type) {
   const modal = document.getElementById("messageModal");
   const spinner = document.getElementById("modalSpinner");
   const icon = document.getElementById("modalStatusIcon");
@@ -31,126 +29,17 @@ function showMessage(text, type) {
 
   msg.textContent = text;
   modal.style.display = "flex";
-  
-  // Auto fechar se for sucesso ou erro após 2 segundos
-  if (type === "success" || type === "error") {
-    setTimeout(() => {
-      closeMessageModal();
-    }, 2000);
-  }
 }
 
-function closeMessageModal() {
-  const modal = document.getElementById("messageModal");
-  if (modal) modal.style.display = "none";
+window.closeMessageModal = function() {
+  document.getElementById("messageModal").style.display = "none";
 }
-
-// ================== MÁSCARA QUANTIDADE ==================
-function setupMasks() {
-  const qtdInput = document.getElementById("quantidade");
-  const editQtdInput = document.getElementById("editQuantidade");
-
-  const applyMask = (e) => {
-    let v = e.target.value.replace(/\D/g, "");
-    if (v.length > 3) {
-      v = v.slice(0, -3) + "," + v.slice(-3);
-    }
-    e.target.value = v;
-  };
-
-  if (qtdInput) qtdInput.addEventListener("input", applyMask);
-  if (editQtdInput) editQtdInput.addEventListener("input", applyMask);
-}
-
-// ================== PREVIEW FOTO ==================
-function setupPhotoPreview() {
-  const fotoInput = document.getElementById("foto");
-  if (fotoInput) {
-    fotoInput.addEventListener("change", (e) => {
-      const file = e.target.files[0];
-      if (!file) return;
-
-      const preview = document.getElementById("imagePreview");
-      preview.src = URL.createObjectURL(file);
-      preview.style.display = "block";
-      
-      const label = document.getElementById("fileLabel");
-      if (label) label.textContent = "📸 Foto selecionada: " + file.name;
-    });
-  }
-}
-
-// ================== ENVIO ==================
-const transferForm = document.getElementById("transferForm");
-if (transferForm) {
-  transferForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    showMessage("Enviando...", "loading");
-
-    try {
-      const fiscalInput = document.getElementById("fiscal");
-      const setorInput = document.getElementById("setor");
-      const codigoInput = document.getElementById("codigoBarras");
-      const quantidadeInput = document.getElementById("quantidade");
-      const fotoInput = document.getElementById("foto");
-
-      const fiscal = fiscalInput.value.trim();
-      const setor = setorInput.value;
-      const codigoBarras = codigoInput.value.trim();
-      const quantidade = parseFloat(quantidadeInput.value.replace(",", "."));
-      const foto = fotoInput.files[0];
-
-      if (!fiscal || !setor || !codigoBarras || !quantidade || !foto) {
-        throw new Error("Preencha todos os campos");
-      }
-
-      const fileName = `${Date.now()}_${foto.name}`;
-
-      const { error: uploadError } = await supabase
-        .storage
-        .from("transferencias")
-        .upload(fileName, foto);
-
-      if (uploadError) throw uploadError;
-
-      const { data: imageData } = supabase
-        .storage
-        .from("transferencias")
-        .getPublicUrl(fileName);
-
-      const { error } = await supabase
-        .from("transferencias")
-        .insert([{
-          fiscal,
-          setor,
-          codigo_barras: codigoBarras,
-          quantidade,
-          foto_url: imageData.publicUrl,
-          baixa_ok: false
-        }]);
-
-      if (error) throw error;
-
-      showMessage("Transferência enviada com sucesso!", "success");
-      e.target.reset();
-      document.getElementById("imagePreview").style.display = "none";
-      const label = document.getElementById("fileLabel");
-      if (label) label.textContent = "📷 Tirar foto ou escolher da galeria";
-
-    } catch (err) {
-      console.error(err);
-      showMessage(err.message, "error");
-    }
-  });
-}
-
-// ================== VARIÁVEIS GLOBAIS PARA SENHA ==================
-let acaoPendente = null;
-let itemIdPendente = null;
 
 // ================== MODAL DE SENHA ==================
 window.closePasswordModal = function() {
-  document.getElementById("passwordModal").classList.remove("show");
+  const modal = document.getElementById("passwordModal");
+  modal.classList.remove("show");
+  modal.style.display = "none";
   document.getElementById("passwordInput").value = "";
   acaoPendente = null;
   itemIdPendente = null;
@@ -158,32 +47,66 @@ window.closePasswordModal = function() {
 
 window.validatePassword = function() {
   const senha = document.getElementById("passwordInput").value;
-  const senhaCorreta = "admin123"; // Senha padrão solicitada
+  const senhaCorreta = "admin123";
+  
+  console.log("=== VALIDANDO SENHA ===");
+  console.log("Senha digitada:", senha);
+  console.log("Senha correta:", senhaCorreta);
+  console.log("Ação pendente:", acaoPendente);
+  console.log("Item ID:", itemIdPendente);
   
   if (senha === senhaCorreta) {
+    console.log("Senha correta! Executando ação...");
     closePasswordModal();
     
     if (acaoPendente === 'editar') {
-      abrirModalEdicao(itemIdPendente);
+      console.log("Chamando abrirModalEdicao...");
+      window.abrirModalEdicao(itemIdPendente);
     } else if (acaoPendente === 'excluir') {
-      excluirItem(itemIdPendente);
+      console.log("Chamando excluirItem...");
+      window.excluirItem(itemIdPendente);
     } else if (acaoPendente === 'baixar') {
-      marcarComoBaixado(itemIdPendente);
+      console.log("Chamando marcarComoBaixado...");
+      window.marcarComoBaixado(itemIdPendente);
+    } else {
+      console.log("ERRO: Ação não reconhecida:", acaoPendente);
     }
   } else {
+    console.log("Senha incorreta!");
     showMessage("Senha incorreta!", "error");
   }
 }
 
+window.solicitarSenhaParaAcao = function(acao, id) {
+  console.log("=== SOLICITANDO SENHA ===");
+  console.log("Ação:", acao);
+  console.log("ID:", id);
+  
+  acaoPendente = acao;
+  itemIdPendente = id;
+  
+  const modal = document.getElementById("passwordModal");
+  modal.classList.add("show");
+  modal.style.display = "flex";
+  
+  setTimeout(() => {
+    document.getElementById("passwordInput").focus();
+  }, 100);
+}
+
 // ================== MODAL DE EDIÇÃO ==================
 window.closeEditModal = function() {
-  document.getElementById("editModal").classList.remove("show");
+  const modal = document.getElementById("editModal");
+  modal.classList.remove("show");
+  modal.style.display = "none";
   document.getElementById("editForm").reset();
   itemIdPendente = null;
 }
 
-async function abrirModalEdicao(id) {
+window.abrirModalEdicao = async function(id) {
   try {
+    console.log("Carregando dados do item:", id);
+    
     const { data, error } = await supabase
       .from("transferencias")
       .select("*")
@@ -192,107 +115,84 @@ async function abrirModalEdicao(id) {
 
     if (error) throw error;
 
+    console.log("Dados carregados:", data);
+
     document.getElementById("editFiscal").value = data.fiscal;
     document.getElementById("editSetor").value = data.setor;
     document.getElementById("editCodigoBarras").value = data.codigo_barras;
     document.getElementById("editQuantidade").value = data.quantidade.toString().replace(".", ",");
     
     itemIdPendente = id;
-    document.getElementById("editModal").classList.add("show");
+    
+    const modal = document.getElementById("editModal");
+    modal.classList.add("show");
+    modal.style.display = "flex";
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao carregar dados:", err);
     showMessage("Erro ao carregar dados para edição", "error");
   }
 }
 
-// ================== FORMULÁRIO DE EDIÇÃO ==================
-const editForm = document.getElementById("editForm");
-if (editForm) {
-  editForm.addEventListener("submit", async (e) => {
-    e.preventDefault();
-    showMessage("Salvando alterações...", "loading");
-
-    try {
-      const fiscal = document.getElementById("editFiscal").value.trim();
-      const setor = document.getElementById("editSetor").value;
-      const codigoBarras = document.getElementById("editCodigoBarras").value.trim();
-      const quantidade = parseFloat(document.getElementById("editQuantidade").value.replace(",", "."));
-
-      if (!fiscal || !setor || !codigoBarras || !quantidade) {
-        throw new Error("Preencha todos os campos");
-      }
-
-      const { error } = await supabase
-        .from("transferencias")
-        .update({
-          fiscal,
-          setor,
-          codigo_barras: codigoBarras,
-          quantidade
-        })
-        .eq("id", itemIdPendente);
-
-      if (error) throw error;
-
-      showMessage("Item atualizado com sucesso!", "success");
-      closeEditModal();
-      carregarDados();
-    } catch (err) {
-      console.error(err);
-      showMessage(err.message, "error");
-    }
-  });
-}
-
 // ================== AÇÕES DOS BOTÕES ==================
-window.solicitarSenhaParaAcao = function(acao, id) {
-  acaoPendente = acao;
-  itemIdPendente = id;
-  document.getElementById("passwordModal").classList.add("show");
-  document.getElementById("passwordInput").focus();
-}
-
-async function excluirItem(id) {
+window.excluirItem = async function(id) {
+  console.log("=== FUNÇÃO EXCLUIR ITEM INICIADA ===");
+  console.log("ID recebido:", id);
+  
   showMessage("Excluindo item...", "loading");
   
   try {
+    console.log("Tentando excluir do Supabase...");
+    
     const { error } = await supabase
       .from("transferencias")
       .delete()
       .eq("id", id);
 
+    console.log("Resposta do Supabase - Error:", error);
+
     if (error) throw error;
 
+    console.log("Item excluído com sucesso!");
     showMessage("Item excluído com sucesso!", "success");
-    carregarDados();
+    setTimeout(() => {
+      carregarDados();
+    }, 1000);
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao excluir:", err);
     showMessage("Erro ao excluir item", "error");
   }
 }
 
-async function marcarComoBaixado(id) {
+window.marcarComoBaixado = async function(id) {
+  console.log("=== FUNÇÃO MARCAR COMO BAIXADO INICIADA ===");
+  console.log("ID recebido:", id);
+  
   showMessage("Marcando como baixado...", "loading");
   
   try {
+    console.log("Tentando atualizar no Supabase...");
+    
     const { error } = await supabase
       .from("transferencias")
       .update({ baixa_ok: true })
       .eq("id", id);
 
+    console.log("Resposta do Supabase - Error:", error);
+
     if (error) throw error;
 
+    console.log("Item marcado como baixado com sucesso!");
     showMessage("Item marcado como baixado!", "success");
-    carregarDados();
+    setTimeout(() => {
+      carregarDados();
+    }, 1000);
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao marcar:", err);
     showMessage("Erro ao marcar item", "error");
   }
 }
 
 // ================== FILTROS ==================
-let todosOsDados = [];
-
 window.aplicarFiltros = function() {
   const filtroFiscal = document.getElementById("filtroFiscal").value.toLowerCase();
   const filtroSetor = document.getElementById("filtroSetor").value;
@@ -301,27 +201,22 @@ window.aplicarFiltros = function() {
   const filtroPendente = document.getElementById("filtroPendente").checked;
 
   let dadosFiltrados = todosOsDados.filter(item => {
-    // Filtro de fiscal
     if (filtroFiscal && !item.fiscal.toLowerCase().includes(filtroFiscal)) {
       return false;
     }
 
-    // Filtro de setor
     if (filtroSetor && item.setor !== filtroSetor) {
       return false;
     }
 
-    // Filtro de código
     if (filtroCodigo && !item.codigo_barras.toLowerCase().includes(filtroCodigo)) {
       return false;
     }
 
-    // Filtro de baixa OK
     if (filtroBaixaOk && !item.baixa_ok) {
       return false;
     }
 
-    // Filtro de pendentes
     if (filtroPendente && item.baixa_ok) {
       return false;
     }
@@ -333,20 +228,12 @@ window.aplicarFiltros = function() {
 }
 
 // ================== VISUALIZAR ==================
-function renderizarTabela(data) {
+window.renderizarTabela = function(data) {
   const tbody = document.getElementById("dataTableBody");
-  if (!tbody) return;
-  
   tbody.innerHTML = "";
 
   if (data.length === 0) {
-    const tr = document.createElement('tr');
-    const td = document.createElement('td');
-    td.className = 'no-data';
-    td.colSpan = 8;
-    td.textContent = "Nenhum dado encontrado com os filtros aplicados.";
-    tr.appendChild(td);
-    tbody.appendChild(tr);
+    tbody.innerHTML = `<tr><td colspan="8" class="no-data">Nenhum dado encontrado</td></tr>`;
     return;
   }
 
@@ -370,7 +257,7 @@ function renderizarTabela(data) {
     
     // Quantidade
     const tdQuantidade = document.createElement('td');
-    tdQuantidade.textContent = item.quantidade.toLocaleString('pt-BR', { minimumFractionDigits: 3 });
+    tdQuantidade.textContent = item.quantidade;
     tr.appendChild(tdQuantidade);
     
     // Foto
@@ -417,8 +304,7 @@ function renderizarTabela(data) {
     // Botão Baixar (apenas se não estiver baixado)
     if (!item.baixa_ok) {
       const btnBaixar = document.createElement('button');
-      const btnBaixarClass = 'btn-small';
-      btnBaixar.className = btnBaixarClass;
+      btnBaixar.className = 'btn-small';
       btnBaixar.style.backgroundColor = '#28a745';
       btnBaixar.style.color = 'white';
       btnBaixar.textContent = '✓ Baixar';
@@ -436,41 +322,53 @@ function renderizarTabela(data) {
 window.carregarDados = async function() {
   showMessage("Carregando dados...", "loading");
 
-  try {
-    const { data, error } = await supabase
-      .from("transferencias")
-      .select("*")
-      .order("created_at", { ascending: false });
+  const { data, error } = await supabase
+    .from("transferencias")
+    .select("*")
+    .order("created_at", { ascending: false });
 
-    if (error) throw error;
-
-    todosOsDados = data || [];
-    aplicarFiltros();
-    closeMessageModal();
-  } catch (err) {
-    console.error(err);
-    showMessage("Erro ao carregar dados", "error");
+  if (error) {
+    showMessage("Erro ao carregar", "error");
+    return;
   }
+
+  todosOsDados = data;
+  aplicarFiltros();
+  closeMessageModal();
 }
 
 // ================== INICIALIZAÇÃO ==================
 document.addEventListener('DOMContentLoaded', () => {
-  setupMasks();
-  setupPhotoPreview();
+  console.log("=== APP CARREGADO ===");
   
-  // Eventos dos filtros
-  const fFiscal = document.getElementById("filtroFiscal");
-  const fSetor = document.getElementById("filtroSetor");
-  const fCodigo = document.getElementById("filtroCodigo");
-  const fBaixaOk = document.getElementById("filtroBaixaOk");
-  const fPendente = document.getElementById("filtroPendente");
+  // Máscara quantidade
+  document.getElementById("quantidade").addEventListener("input", (e) => {
+    let v = e.target.value.replace(/\D/g, "");
+    if (v.length > 3) {
+      v = v.slice(0, -3) + "," + v.slice(-3);
+    }
+    e.target.value = v;
+  });
 
-  if (fFiscal) fFiscal.addEventListener("input", aplicarFiltros);
-  if (fSetor) fSetor.addEventListener("change", aplicarFiltros);
-  if (fCodigo) fCodigo.addEventListener("input", aplicarFiltros);
-  if (fBaixaOk) fBaixaOk.addEventListener("change", aplicarFiltros);
-  if (fPendente) fPendente.addEventListener("change", aplicarFiltros);
+  // Máscara quantidade edição
+  document.getElementById("editQuantidade").addEventListener("input", (e) => {
+    let v = e.target.value.replace(/\D/g, "");
+    if (v.length > 3) {
+      v = v.slice(0, -3) + "," + v.slice(-3);
+    }
+    e.target.value = v;
+  });
+  
+  // Preview foto
+  document.getElementById("foto").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
 
+    const preview = document.getElementById("imagePreview");
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+  });
+  
   // Listener para Enter no campo de senha
   const passwordInput = document.getElementById("passwordInput");
   if (passwordInput) {
@@ -481,4 +379,102 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
+  
+  // Filtros
+  document.getElementById("filtroFiscal").addEventListener("input", aplicarFiltros);
+  document.getElementById("filtroSetor").addEventListener("change", aplicarFiltros);
+  document.getElementById("filtroCodigo").addEventListener("input", aplicarFiltros);
+  document.getElementById("filtroBaixaOk").addEventListener("change", aplicarFiltros);
+  document.getElementById("filtroPendente").addEventListener("change", aplicarFiltros);
+  
+  // Formulário de cadastro
+  document.getElementById("transferForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showMessage("Enviando...", "loading");
+
+    try {
+      const fiscal = document.getElementById("fiscal").value.trim();
+      const setor = document.getElementById("setor").value;
+      const codigoBarras = document.getElementById("codigoBarras").value.trim();
+      const quantidade = parseFloat(document.getElementById("quantidade").value.replace(",", "."));
+      const foto = document.getElementById("foto").files[0];
+
+      if (!fiscal || !setor || !codigoBarras || !quantidade || !foto) {
+        throw new Error("Preencha todos os campos");
+      }
+
+      const fileName = `${Date.now()}_${foto.name}`;
+
+      const { error: uploadError } = await supabase
+        .storage
+        .from("transferencias")
+        .upload(fileName, foto);
+
+      if (uploadError) throw uploadError;
+
+      const { data: imageData } = supabase
+        .storage
+        .from("transferencias")
+        .getPublicUrl(fileName);
+
+      const { error } = await supabase
+        .from("transferencias")
+        .insert([{
+          fiscal,
+          setor,
+          codigo_barras: codigoBarras,
+          quantidade,
+          foto_url: imageData.publicUrl,
+          baixa_ok: false
+        }]);
+
+      if (error) throw error;
+
+      showMessage("Transferência enviada com sucesso!", "success");
+      e.target.reset();
+      document.getElementById("imagePreview").style.display = "none";
+
+    } catch (err) {
+      console.error(err);
+      showMessage(err.message, "error");
+    }
+  });
+  
+  // Formulário de edição
+  document.getElementById("editForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showMessage("Salvando alterações...", "loading");
+
+    try {
+      const fiscal = document.getElementById("editFiscal").value.trim();
+      const setor = document.getElementById("editSetor").value;
+      const codigoBarras = document.getElementById("editCodigoBarras").value.trim();
+      const quantidade = parseFloat(document.getElementById("editQuantidade").value.replace(",", "."));
+
+      if (!fiscal || !setor || !codigoBarras || !quantidade) {
+        throw new Error("Preencha todos os campos");
+      }
+
+      const { error } = await supabase
+        .from("transferencias")
+        .update({
+          fiscal,
+          setor,
+          codigo_barras: codigoBarras,
+          quantidade
+        })
+        .eq("id", itemIdPendente);
+
+      if (error) throw error;
+
+      showMessage("Item atualizado com sucesso!", "success");
+      closeEditModal();
+      setTimeout(() => {
+        carregarDados();
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+      showMessage(err.message, "error");
+    }
+  });
 });
