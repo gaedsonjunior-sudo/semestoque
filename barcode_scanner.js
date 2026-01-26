@@ -1,6 +1,6 @@
 let codeReader;
 
-function iniciarScanner() {
+async function iniciarScanner() {
   const modal = document.getElementById("scannerModal");
   const video = document.getElementById("scannerVideo");
 
@@ -10,12 +10,23 @@ function iniciarScanner() {
     codeReader = new ZXing.BrowserBarcodeReader();
   }
 
-  codeReader.decodeFromVideoDevice(null, video, (result, err) => {
-    if (result) {
-      document.getElementById("codigo").value = result.text;
-      fecharScanner();
+  const devices = await ZXing.BrowserCodeReader.listVideoInputDevices();
+
+  // tenta pegar a câmera traseira
+  const backCamera =
+    devices.find(d => d.label.toLowerCase().includes("back")) ||
+    devices[devices.length - 1];
+
+  codeReader.decodeFromVideoDevice(
+    backCamera.deviceId,
+    video,
+    (result, err) => {
+      if (result) {
+        document.getElementById("codigo").value = result.text;
+        fecharScanner();
+      }
     }
-  });
+  );
 }
 
 function fecharScanner() {
