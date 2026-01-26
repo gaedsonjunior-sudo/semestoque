@@ -1,5 +1,10 @@
+// ================== VARIÁVEIS GLOBAIS ==================
+let acaoPendente = null;
+let itemIdPendente = null;
+let todosOsDados = [];
+
 // ================== TABS ==================
-function showTab(tabId) {
+window.showTab = function(tabId) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
   document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
 
@@ -12,7 +17,7 @@ function showTab(tabId) {
 }
 
 // ================== MODAL MENSAGEM ==================
-function showMessage(text, type) {
+window.showMessage = function(text, type) {
   const modal = document.getElementById("messageModal");
   const spinner = document.getElementById("modalSpinner");
   const icon = document.getElementById("modalStatusIcon");
@@ -26,117 +31,15 @@ function showMessage(text, type) {
   modal.style.display = "flex";
 }
 
-function closeMessageModal() {
+window.closeMessageModal = function() {
   document.getElementById("messageModal").style.display = "none";
 }
 
-// ================== MÁSCARA QUANTIDADE ==================
-document.getElementById("quantidade").addEventListener("input", (e) => {
-  let v = e.target.value.replace(/\D/g, "");
-  if (v.length > 3) {
-    v = v.slice(0, -3) + "," + v.slice(-3);
-  }
-  e.target.value = v;
-});
-
-// Máscara para o campo de edição também
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById("editQuantidade").addEventListener("input", (e) => {
-    let v = e.target.value.replace(/\D/g, "");
-    if (v.length > 3) {
-      v = v.slice(0, -3) + "," + v.slice(-3);
-    }
-    e.target.value = v;
-  });
-  
-  // Adicionar listener para Enter no campo de senha
-  const passwordInput = document.getElementById("passwordInput");
-  if (passwordInput) {
-    passwordInput.addEventListener("keypress", (e) => {
-      if (e.key === "Enter") {
-        e.preventDefault();
-        validatePassword();
-      }
-    });
-  }
-});
-
-// ================== PREVIEW FOTO ==================
-document.getElementById("foto").addEventListener("change", (e) => {
-  const file = e.target.files[0];
-  if (!file) return;
-
-  const preview = document.getElementById("imagePreview");
-  preview.src = URL.createObjectURL(file);
-  preview.style.display = "block";
-});
-
-// ================== ENVIO ==================
-document.getElementById("transferForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  showMessage("Enviando...", "loading");
-
-  try {
-    const fiscalInput = document.getElementById("fiscal");
-    const setorInput = document.getElementById("setor");
-    const codigoInput = document.getElementById("codigoBarras");
-    const quantidadeInput = document.getElementById("quantidade");
-    const fotoInput = document.getElementById("foto");
-
-    const fiscal = fiscalInput.value.trim();
-    const setor = setorInput.value;
-    const codigoBarras = codigoInput.value.trim();
-    const quantidade = parseFloat(quantidadeInput.value.replace(",", "."));
-    const foto = fotoInput.files[0];
-
-    if (!fiscal || !setor || !codigoBarras || !quantidade || !foto) {
-      throw new Error("Preencha todos os campos");
-    }
-
-    const fileName = `${Date.now()}_${foto.name}`;
-
-    const { error: uploadError } = await supabase
-      .storage
-      .from("transferencias")
-      .upload(fileName, foto);
-
-    if (uploadError) throw uploadError;
-
-    const { data: imageData } = supabase
-      .storage
-      .from("transferencias")
-      .getPublicUrl(fileName);
-
-    const { error } = await supabase
-      .from("transferencias")
-      .insert([{
-        fiscal,
-        setor,
-        codigo_barras: codigoBarras,
-        quantidade,
-        foto_url: imageData.publicUrl,
-        baixa_ok: false
-      }]);
-
-    if (error) throw error;
-
-    showMessage("Transferência enviada com sucesso!", "success");
-    e.target.reset();
-    document.getElementById("imagePreview").style.display = "none";
-
-  } catch (err) {
-    console.error(err);
-    showMessage(err.message, "error");
-  }
-});
-
-// ================== VARIÁVEIS GLOBAIS PARA SENHA ==================
-let acaoPendente = null;
-let itemIdPendente = null;
-
 // ================== MODAL DE SENHA ==================
 window.closePasswordModal = function() {
-  document.getElementById("passwordModal").classList.remove("show");
+  const modal = document.getElementById("passwordModal");
+  modal.classList.remove("show");
+  modal.style.display = "none";
   document.getElementById("passwordInput").value = "";
   acaoPendente = null;
   itemIdPendente = null;
@@ -144,37 +47,64 @@ window.closePasswordModal = function() {
 
 window.validatePassword = function() {
   const senha = document.getElementById("passwordInput").value;
-  const senhaCorreta = "admin123"; // Senha hardcoded para garantir funcionamento
+  const senhaCorreta = "admin123";
   
-  console.log("Validando senha...");
+  console.log("=== VALIDANDO SENHA ===");
   console.log("Senha digitada:", senha);
+  console.log("Senha correta:", senhaCorreta);
   console.log("Ação pendente:", acaoPendente);
   console.log("Item ID:", itemIdPendente);
   
   if (senha === senhaCorreta) {
+    console.log("Senha correta! Executando ação...");
     closePasswordModal();
     
     if (acaoPendente === 'editar') {
+      console.log("Abrindo modal de edição...");
       abrirModalEdicao(itemIdPendente);
     } else if (acaoPendente === 'excluir') {
+      console.log("Excluindo item...");
       excluirItem(itemIdPendente);
     } else if (acaoPendente === 'baixar') {
+      console.log("Marcando como baixado...");
       marcarComoBaixado(itemIdPendente);
     }
   } else {
+    console.log("Senha incorreta!");
     showMessage("Senha incorreta!", "error");
   }
 }
 
+window.solicitarSenhaParaAcao = function(acao, id) {
+  console.log("=== SOLICITANDO SENHA ===");
+  console.log("Ação:", acao);
+  console.log("ID:", id);
+  
+  acaoPendente = acao;
+  itemIdPendente = id;
+  
+  const modal = document.getElementById("passwordModal");
+  modal.classList.add("show");
+  modal.style.display = "flex";
+  
+  setTimeout(() => {
+    document.getElementById("passwordInput").focus();
+  }, 100);
+}
+
 // ================== MODAL DE EDIÇÃO ==================
 window.closeEditModal = function() {
-  document.getElementById("editModal").classList.remove("show");
+  const modal = document.getElementById("editModal");
+  modal.classList.remove("show");
+  modal.style.display = "none";
   document.getElementById("editForm").reset();
   itemIdPendente = null;
 }
 
-async function abrirModalEdicao(id) {
+window.abrirModalEdicao = async function(id) {
   try {
+    console.log("Carregando dados do item:", id);
+    
     const { data, error } = await supabase
       .from("transferencias")
       .select("*")
@@ -183,67 +113,31 @@ async function abrirModalEdicao(id) {
 
     if (error) throw error;
 
+    console.log("Dados carregados:", data);
+
     document.getElementById("editFiscal").value = data.fiscal;
     document.getElementById("editSetor").value = data.setor;
     document.getElementById("editCodigoBarras").value = data.codigo_barras;
     document.getElementById("editQuantidade").value = data.quantidade.toString().replace(".", ",");
     
     itemIdPendente = id;
-    document.getElementById("editModal").classList.add("show");
+    
+    const modal = document.getElementById("editModal");
+    modal.classList.add("show");
+    modal.style.display = "flex";
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao carregar dados:", err);
     showMessage("Erro ao carregar dados para edição", "error");
   }
 }
 
-// ================== FORMULÁRIO DE EDIÇÃO ==================
-document.getElementById("editForm").addEventListener("submit", async (e) => {
-  e.preventDefault();
-  showMessage("Salvando alterações...", "loading");
-
-  try {
-    const fiscal = document.getElementById("editFiscal").value.trim();
-    const setor = document.getElementById("editSetor").value;
-    const codigoBarras = document.getElementById("editCodigoBarras").value.trim();
-    const quantidade = parseFloat(document.getElementById("editQuantidade").value.replace(",", "."));
-
-    if (!fiscal || !setor || !codigoBarras || !quantidade) {
-      throw new Error("Preencha todos os campos");
-    }
-
-    const { error } = await supabase
-      .from("transferencias")
-      .update({
-        fiscal,
-        setor,
-        codigo_barras: codigoBarras,
-        quantidade
-      })
-      .eq("id", itemIdPendente);
-
-    if (error) throw error;
-
-    showMessage("Item atualizado com sucesso!", "success");
-    closeEditModal();
-    carregarDados();
-  } catch (err) {
-    console.error(err);
-    showMessage(err.message, "error");
-  }
-});
-
 // ================== AÇÕES DOS BOTÕES ==================
-function solicitarSenhaParaAcao(acao, id) {
-  acaoPendente = acao;
-  itemIdPendente = id;
-  document.getElementById("passwordModal").classList.add("show");
-  document.getElementById("passwordInput").focus();
-}
-
-async function excluirItem(id) {
+window.excluirItem = async function(id) {
   showMessage("Excluindo item...", "loading");
   
   try {
+    console.log("Excluindo item ID:", id);
+    
     const { error } = await supabase
       .from("transferencias")
       .delete()
@@ -252,17 +146,21 @@ async function excluirItem(id) {
     if (error) throw error;
 
     showMessage("Item excluído com sucesso!", "success");
-    carregarDados();
+    setTimeout(() => {
+      carregarDados();
+    }, 1000);
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao excluir:", err);
     showMessage("Erro ao excluir item", "error");
   }
 }
 
-async function marcarComoBaixado(id) {
+window.marcarComoBaixado = async function(id) {
   showMessage("Marcando como baixado...", "loading");
   
   try {
+    console.log("Marcando item ID como baixado:", id);
+    
     const { error } = await supabase
       .from("transferencias")
       .update({ baixa_ok: true })
@@ -271,17 +169,17 @@ async function marcarComoBaixado(id) {
     if (error) throw error;
 
     showMessage("Item marcado como baixado!", "success");
-    carregarDados();
+    setTimeout(() => {
+      carregarDados();
+    }, 1000);
   } catch (err) {
-    console.error(err);
+    console.error("Erro ao marcar:", err);
     showMessage("Erro ao marcar item", "error");
   }
 }
 
 // ================== FILTROS ==================
-let todosOsDados = [];
-
-function aplicarFiltros() {
+window.aplicarFiltros = function() {
   const filtroFiscal = document.getElementById("filtroFiscal").value.toLowerCase();
   const filtroSetor = document.getElementById("filtroSetor").value;
   const filtroCodigo = document.getElementById("filtroCodigo").value.toLowerCase();
@@ -289,27 +187,22 @@ function aplicarFiltros() {
   const filtroPendente = document.getElementById("filtroPendente").checked;
 
   let dadosFiltrados = todosOsDados.filter(item => {
-    // Filtro de fiscal
     if (filtroFiscal && !item.fiscal.toLowerCase().includes(filtroFiscal)) {
       return false;
     }
 
-    // Filtro de setor
     if (filtroSetor && item.setor !== filtroSetor) {
       return false;
     }
 
-    // Filtro de código
     if (filtroCodigo && !item.codigo_barras.toLowerCase().includes(filtroCodigo)) {
       return false;
     }
 
-    // Filtro de baixa OK
     if (filtroBaixaOk && !item.baixa_ok) {
       return false;
     }
 
-    // Filtro de pendentes
     if (filtroPendente && item.baixa_ok) {
       return false;
     }
@@ -320,17 +213,8 @@ function aplicarFiltros() {
   renderizarTabela(dadosFiltrados);
 }
 
-// Adicionar eventos aos filtros
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById("filtroFiscal").addEventListener("input", aplicarFiltros);
-  document.getElementById("filtroSetor").addEventListener("change", aplicarFiltros);
-  document.getElementById("filtroCodigo").addEventListener("input", aplicarFiltros);
-  document.getElementById("filtroBaixaOk").addEventListener("change", aplicarFiltros);
-  document.getElementById("filtroPendente").addEventListener("change", aplicarFiltros);
-});
-
 // ================== VISUALIZAR ==================
-function renderizarTabela(data) {
+window.renderizarTabela = function(data) {
   const tbody = document.getElementById("dataTableBody");
   tbody.innerHTML = "";
 
@@ -421,7 +305,7 @@ function renderizarTabela(data) {
   });
 }
 
-async function carregarDados() {
+window.carregarDados = async function() {
   showMessage("Carregando dados...", "loading");
 
   const { data, error } = await supabase
@@ -438,3 +322,145 @@ async function carregarDados() {
   aplicarFiltros();
   closeMessageModal();
 }
+
+// ================== INICIALIZAÇÃO ==================
+document.addEventListener('DOMContentLoaded', () => {
+  console.log("=== APP CARREGADO ===");
+  
+  // Máscara quantidade
+  document.getElementById("quantidade").addEventListener("input", (e) => {
+    let v = e.target.value.replace(/\D/g, "");
+    if (v.length > 3) {
+      v = v.slice(0, -3) + "," + v.slice(-3);
+    }
+    e.target.value = v;
+  });
+
+  // Máscara quantidade edição
+  document.getElementById("editQuantidade").addEventListener("input", (e) => {
+    let v = e.target.value.replace(/\D/g, "");
+    if (v.length > 3) {
+      v = v.slice(0, -3) + "," + v.slice(-3);
+    }
+    e.target.value = v;
+  });
+  
+  // Preview foto
+  document.getElementById("foto").addEventListener("change", (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+
+    const preview = document.getElementById("imagePreview");
+    preview.src = URL.createObjectURL(file);
+    preview.style.display = "block";
+  });
+  
+  // Listener para Enter no campo de senha
+  const passwordInput = document.getElementById("passwordInput");
+  if (passwordInput) {
+    passwordInput.addEventListener("keypress", (e) => {
+      if (e.key === "Enter") {
+        e.preventDefault();
+        validatePassword();
+      }
+    });
+  }
+  
+  // Filtros
+  document.getElementById("filtroFiscal").addEventListener("input", aplicarFiltros);
+  document.getElementById("filtroSetor").addEventListener("change", aplicarFiltros);
+  document.getElementById("filtroCodigo").addEventListener("input", aplicarFiltros);
+  document.getElementById("filtroBaixaOk").addEventListener("change", aplicarFiltros);
+  document.getElementById("filtroPendente").addEventListener("change", aplicarFiltros);
+  
+  // Formulário de cadastro
+  document.getElementById("transferForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showMessage("Enviando...", "loading");
+
+    try {
+      const fiscal = document.getElementById("fiscal").value.trim();
+      const setor = document.getElementById("setor").value;
+      const codigoBarras = document.getElementById("codigoBarras").value.trim();
+      const quantidade = parseFloat(document.getElementById("quantidade").value.replace(",", "."));
+      const foto = document.getElementById("foto").files[0];
+
+      if (!fiscal || !setor || !codigoBarras || !quantidade || !foto) {
+        throw new Error("Preencha todos os campos");
+      }
+
+      const fileName = `${Date.now()}_${foto.name}`;
+
+      const { error: uploadError } = await supabase
+        .storage
+        .from("transferencias")
+        .upload(fileName, foto);
+
+      if (uploadError) throw uploadError;
+
+      const { data: imageData } = supabase
+        .storage
+        .from("transferencias")
+        .getPublicUrl(fileName);
+
+      const { error } = await supabase
+        .from("transferencias")
+        .insert([{
+          fiscal,
+          setor,
+          codigo_barras: codigoBarras,
+          quantidade,
+          foto_url: imageData.publicUrl,
+          baixa_ok: false
+        }]);
+
+      if (error) throw error;
+
+      showMessage("Transferência enviada com sucesso!", "success");
+      e.target.reset();
+      document.getElementById("imagePreview").style.display = "none";
+
+    } catch (err) {
+      console.error(err);
+      showMessage(err.message, "error");
+    }
+  });
+  
+  // Formulário de edição
+  document.getElementById("editForm").addEventListener("submit", async (e) => {
+    e.preventDefault();
+    showMessage("Salvando alterações...", "loading");
+
+    try {
+      const fiscal = document.getElementById("editFiscal").value.trim();
+      const setor = document.getElementById("editSetor").value;
+      const codigoBarras = document.getElementById("editCodigoBarras").value.trim();
+      const quantidade = parseFloat(document.getElementById("editQuantidade").value.replace(",", "."));
+
+      if (!fiscal || !setor || !codigoBarras || !quantidade) {
+        throw new Error("Preencha todos os campos");
+      }
+
+      const { error } = await supabase
+        .from("transferencias")
+        .update({
+          fiscal,
+          setor,
+          codigo_barras: codigoBarras,
+          quantidade
+        })
+        .eq("id", itemIdPendente);
+
+      if (error) throw error;
+
+      showMessage("Item atualizado com sucesso!", "success");
+      closeEditModal();
+      setTimeout(() => {
+        carregarDados();
+      }, 1000);
+    } catch (err) {
+      console.error(err);
+      showMessage(err.message, "error");
+    }
+  });
+});
