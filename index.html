@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transferências de Produtos</title>
+<style>
+/* CSS ORIGINAL + ESTILOS SCANNER */
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif; background-color: #f5f5f5; color: #333; line-height: 1.6; }
+.container { max-width: 100%; margin: 0 auto; padding: 20px; }
+.header { background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); color: white; padding: 20px; text-align: center; margin-bottom: 20px; border-radius: 10px; }
+.header h1 { font-size: 24px; margin-bottom: 5px; }
+.header p { font-size: 14px; opacity: 0.9; }
+/* ... TODO O CSS ORIGINAL ATÉ AQUI ... */
+
+/* NOVOS ESTILOS SCANNER */
+.scanner-container { position: relative; margin-bottom: 15px; }
+.scanner-btn { position: absolute; top: 10px; right: 10px; z-index: 10; background: rgba(102, 126, 234, 0.9); color: white; border: none; padding: 8px 12px; border-radius: 20px; font-size: 12px; cursor: pointer; }
+.scanner-area { width: 100%; height: 280px; border: 3px solid #667eea; border-radius: 12px; overflow: hidden; background: #f8f9ff; display: none; margin-bottom: 10px; }
+#scanner { width: 100%; height: 100%; }
+.scanner-overlay { position: absolute; top: 0; left: 0; right: 0; bottom: 0; background: linear-gradient(45deg, transparent 49%, rgba(102,126,234,0.3) 50%, rgba(102,126,234,0.3) 52%, transparent 53%); background-size: 20px 20px; pointer-events: none; }
+
+/* FIM CSS - resto igual ao original */
+.form-group { margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 8px; font-weight: 600; color: #555; }
+.form-group input, .form-group select { width: 100%; padding: 12px; border: 2px solid #e1e5e9; border-radius: 8px; font-size: 16px; transition: border-color 0.3s ease; }
+.form-group input:focus, .form-group select:focus { outline: none; border-color: #667eea; }
+/* Inclua TODO o CSS original aqui - file-input, btn, modals, table, etc. */
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>Transferências de Produtos 📦</h1>
+<p>Scanner + Firebase + Multi-usuário</p>
+</div>
+
+<div class="tabs">
+<button class="tab active" onclick="showTab('cadastro')">📷 Cadastrar</button>
+<button class="tab" onclick="showTab('visualizar')">📊 Visualizar</button>
+</div>
+
+<!-- TAB CADASTRO -->
+<div class="tab-content active" id="cadastro">
+<form id="transferForm">
+<div class="form-group">
+<label for="fiscal">Nome do Fiscal *</label>
+<input id="fiscal" name="fiscal" placeholder="Digite o nome do fiscal" required type="text"/>
+</div>
+
+<div class="form-group">
+<label for="setor">Setor de Destino *</label>
+<select id="setor" name="setor" required>
+<option value="">Selecione o setor</option>
+<option value="Consumo Limpeza">Consumo Limpeza</option>
+<option value="Consumo Padaria">Consumo Padaria</option>
+<option value="Consumo Refeitório">Consumo Refeitório</option>
+<option value="Consumo Rotisserie">Consumo Rotisserie</option>
+<option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
+<option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
+<option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
+<option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
+<option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
+<option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
+</select>
+</div>
+
+<!-- CAMPO SCANNER DE CÓDIGO DE BARRAS -->
+<div class="form-group">
+<label>Código de Barras * 📱</label>
+<div class="scanner-container">
+<button class="scanner-btn" onclick="toggleScanner()" id="scannerBtn">📷 Escanear</button>
+<div class="scanner-area" id="scannerArea">
+<video id="scanner"></video>
+<div class="scanner-overlay"></div>
+</div>
+</div>
+<input id="codigoBarras" inputmode="numeric" pattern="[0-9]*" placeholder="Ou digite manualmente" style="font-size: 18px; padding: 18px; text-align: center; border: 2px solid #667eea;" required/>
+</div>
+
+<div class="form-group">
+<label for="quantidade">Quantidade *</label>
+<input id="quantidade" inputmode="decimal" name="quantidade" placeholder="0,000" required type="text"/>
+</div>
+
+<div class="form-group">
+<label for="foto">Foto do Produto *</label>
+<div class="file-input-wrapper">
+<div class="file-input">
+<input accept="image/*" id="foto" name="foto" required type="file"/>
+<span id="fileLabel">📷 Tirar foto ou escolher da galeria</span>
+</div>
+</div>
+<img class="image-preview" id="imagePreview" style="display: none;"/>
+<div class="compression-info" id="compressionInfo" style="display: none;"></div>
+</div>
+
+<button class="btn" id="submitBtn" type="submit">🚀 Enviar Transferência</button>
+</form>
+</div>
+
+<!-- TAB VISUALIZAR + MODAIS (igual ao original) -->
+<div class="tab-content" id="visualizar">
+<!-- Todo o conteúdo da aba visualizar original -->
+<div class="filters">
+<!-- Filtros originais -->
+</div>
+<button class="btn" onclick="carregarDados()">🔄 Atualizar Dados</button>
+<div id="dadosContainer">
+<div class="table-container">
+<table class="data-table" id="dataTable">
+<thead><tr><th>Fiscal</th><th>Setor</th><th>Código</th><th>Qtd</th><th>Foto</th><th>Baixa</th><th>Data/Hora</th><th>Ações</th></tr></thead>
+<tbody id="dataTableBody"><tr><td class="no-data" colspan="8">Carregue os dados</td></tr></tbody>
+</table>
+</div>
+</div>
+</div>
+
+<!-- MODAIS (senha, edição, mensagem) - igual ao original -->
+<div class="modal" id="passwordModal"><!-- conteúdo original --></div>
+<div class="modal" id="editModal"><!-- conteúdo original --></div>
+<div class="message-modal" id="messageModal"><!-- conteúdo original --></div>
+</div>
+
+<!-- LIBRARIES -->
+<script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
+
+<script>
+// ============================================
+// FIREBASE CONFIG - SUBSTITUA PELOS SEUS DADOS
+// ============================================
+const firebaseConfig = {
+  apiKey: "AIzaSUA_API_KEY_AQUI",
+  authDomain: "seu-projeto.firebaseapp.com",
+  projectId: "seu-projeto",
+  storageBucket: "seu-projeto.appspot.com",
+  messagingSenderId: "123456789",
+  appId: "sua-app-id"
+};
+
+// Inicializa Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.firestore();
+
+// ============================================
+// SCANNER CÓDIGO DE BARRAS
+// ============================================
+let html5QrCode = null;
+let scannerRunning = false;
+
+async function toggleScanner() {
+  const scannerArea = document.getElementById('scannerArea');
+  const scannerBtn = document.getElementById('scannerBtn');
+  const codigoBarras = document.getElementById('codigoBarras');
+  
+  if (!scannerRunning) {
+    scannerBtn.innerHTML = '⏹️ Parar';
+    scannerArea.style.display = 'block';
+    codigoBarras.style.display = 'none';
+    
+    try {
+      html5QrCode = new Html5Qrcode("scanner");
+      const config = { fps: 10, qrbox: { width: 250, height: 250 } };
+      
+      await html5QrCode.start(
+        { facingMode: "environment" },
+        config,
+        onScanSuccess,
+        onScanError
+      );
+      scannerRunning = true;
+    } catch (error) {
+      showMessageModal('error', 'Erro câmera: Permita acesso');
+      resetScanner();
+    }
+  } else {
+    resetScanner();
+  }
+}
+
+function resetScanner() {
+  if (html5QrCode) {
+    html5QrCode.stop().then(() => html5QrCode.clear());
+  }
+  scannerRunning = false;
+  document.getElementById('scannerBtn').innerHTML = '📷 Escanear';
+  document.getElementById('scannerArea').style.display = 'none';
+  document.getElementById('codigoBarras').style.display = 'block';
+  document.getElementById('codigoBarras').focus();
+}
+
+function onScanSuccess(decodedText) {
+  document.getElementById('codigoBarras').value = decodedText;
+  showMessageModal('success', `✅ Código: ${decodedText}`);
+  resetScanner();
+  setTimeout(() => document.getElementById('quantidade').focus(), 500);
+}
+
+function onScanError() {}
+
+// ============================================
+// BANCO DE DADOS FIREBASE
+// ============================================
+async function incluirDados(dados) {
+  try {
+    await db.collection('transferencias').add({
+      ...dados,
+      dataHora: firebase.firestore.FieldValue.serverTimestamp(),
+      baixa: 'PENDENTE',
+      fotoUrl: dados.foto
+    });
+    return { sucesso: true, mensagem: 'Transferência salva! ✅' };
+  } catch (error) {
+    return { sucesso: false, mensagem: 'Erro ao salvar' };
+  }
+}
+
+async function buscarDados() {
+  try {
+    const snapshot = await db.collection('transferencias')
+      .orderBy('dataHora', 'desc')
+      .get();
+    return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+  } catch (error) {
+    return [];
+  }
+}
+
+async function excluirDados(id) {
+  try {
+    await db.collection('transferencias').doc(id).delete();
+    return { sucesso: true, mensagem: 'Item excluído!' };
+  } catch (error) {
+    return { sucesso: false, mensagem: 'Erro ao excluir' };
+  }
+}
+
+async function editarDados(id, novosDados) {
+  try {
+    await db.collection('transferencias').doc(id).update(novosDados);
+    return { sucesso: true, mensagem: 'Atualizado!' };
+  } catch (error) {
+    return { sucesso: false, mensagem: 'Erro ao editar' };
+  }
+}
+
+async function atualizarBaixa(id, isOk) {
+  try {
+    await db.collection('transferencias').doc(id).update({
+      baixa: isOk ? 'OK' : 'PENDENTE'
+    });
+    return { sucesso: true };
+  } catch (error) {
+    return { sucesso: false };
+  }
+}
+
+// ============================================
+// FUNÇÕES DE INTERFACE (iguais ao original)
+// ============================================
+const transferForm = document.getElementById('transferForm');
+let allData = [];
+let currentItemId = null;
+let currentItemData = null;
+
+// Compressão imagem (igual original)
+async function comprimirImagem(file) {
+  return new Promise((resolve) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d');
+        canvas.width = 1200;
+        canvas.height = (img.height * 1200) / img.width;
+        ctx.drawImage(img, 0, 0, canvas.width, canvas.height);
+        resolve(canvas.toDataURL('image/jpeg', 0.7));
+      };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  });
+}
+
+function showMessageModal(type, message) {
+  // Implementação original do modal
+  const modal = document.getElementById('messageModal');
+  modal.style.display = 'flex';
+  setTimeout(() => modal.style.display = 'none', 3000);
+}
+
+// Event listeners e resto das funções (formatarQuantidade, carregarDados, etc.)
+// COPIE TODO o JavaScript original exceto as chamadas google.script.run
+
+// SUBMETIDO FORMULÁRIO
+transferForm.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  showMessageModal('loading', 'Enviando...');
+  
+  const fotoFile = document.getElementById('foto').files[0];
+  if (!fotoFile) return showMessageModal('error', 'Selecione foto');
+  
+  const fotoComprimida = await comprimirImagem(fotoFile);
+  
+  const dados = {
+    fiscal: document.getElementById('fiscal').value,
+    setor: document.getElementById('setor').value,
+    codigoBarras: document.getElementById('codigoBarras').value,
+    quantidade: document.getElementById('quantidade').value,
+    foto: fotoComprimida
+  };
+  
+  const response = await incluirDados(dados);
+  showMessageModal(response.sucesso ? 'success' : 'error', response.mensagem);
+  
+  if (response.sucesso) transferForm.reset();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('codigoBarras').focus();
+});
+</script>
+</body>
+</html>
