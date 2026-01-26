@@ -51,42 +51,55 @@ document.getElementById("transferForm").addEventListener("submit", async (e) => 
   showMessage("Enviando...", "loading");
 
   try {
-    const fiscal = fiscal.value.trim();
-    const setor = setor.value;
-    const codigoBarras = codigoBarras.value.trim();
-    const quantidade = parseFloat(quantidade.value.replace(",", "."));
-    const foto = foto.files[0];
+    const fiscalInput = document.getElementById("fiscal");
+    const setorInput = document.getElementById("setor");
+    const codigoInput = document.getElementById("codigoBarras");
+    const quantidadeInput = document.getElementById("quantidade");
+    const fotoInput = document.getElementById("foto");
 
-    if (!foto) throw new Error("Foto obrigatória");
+    const fiscal = fiscalInput.value.trim();
+    const setor = setorInput.value;
+    const codigoBarras = codigoInput.value.trim();
+    const quantidade = parseFloat(quantidadeInput.value.replace(",", "."));
+    const foto = fotoInput.files[0];
+
+    if (!fiscal || !setor || !codigoBarras || !quantidade || !foto) {
+      throw new Error("Preencha todos os campos");
+    }
 
     const fileName = `${Date.now()}_${foto.name}`;
 
     const { error: uploadError } = await supabase
-      .storage.from("transferencias")
+      .storage
+      .from("transferencias")
       .upload(fileName, foto);
 
     if (uploadError) throw uploadError;
 
-    const { data } = supabase
-      .storage.from("transferencias")
+    const { data: imageData } = supabase
+      .storage
+      .from("transferencias")
       .getPublicUrl(fileName);
 
-    const { error } = await supabase.from("transferencias").insert([{
-      fiscal,
-      setor,
-      codigo_barras: codigoBarras,
-      quantidade,
-      foto_url: data.publicUrl,
-      baixa_ok: false
-    }]);
+    const { error } = await supabase
+      .from("transferencias")
+      .insert([{
+        fiscal,
+        setor,
+        codigo_barras: codigoBarras,
+        quantidade,
+        foto_url: imageData.publicUrl,
+        baixa_ok: false
+      }]);
 
     if (error) throw error;
 
     showMessage("Transferência enviada com sucesso!", "success");
     e.target.reset();
-    imagePreview.style.display = "none";
+    document.getElementById("imagePreview").style.display = "none";
 
   } catch (err) {
+    console.error(err);
     showMessage(err.message, "error");
   }
 });
