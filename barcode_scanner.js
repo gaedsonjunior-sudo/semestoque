@@ -7,7 +7,6 @@ async function iniciarScanner() {
 
   modal.style.display = "block";
 
-  // força câmera traseira
   streamAtual = await navigator.mediaDevices.getUserMedia({
     video: { facingMode: { exact: "environment" } },
     audio: false
@@ -30,13 +29,12 @@ async function iniciarScanner() {
 }
 
 function fecharScanner() {
-  const modal = document.getElementById("scannerModal");
-  modal.style.display = "none";
+  document.getElementById("scannerModal").style.display = "none";
 
   if (codeReader) codeReader.reset();
 
   if (streamAtual) {
-    streamAtual.getTracks().forEach(track => track.stop());
+    streamAtual.getTracks().forEach(t => t.stop());
     streamAtual = null;
   }
 }
