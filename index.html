@@ -1,0 +1,685 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Transferências de Produtos</title>
+<style>
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    background-color: #f5f5f5;
+    color: #333;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 20px;
+}
+
+.header {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    text-align: center;
+    margin-bottom: 20px;
+    border-radius: 10px;
+}
+
+.header h1 {
+    font-size: 24px;
+    margin-bottom: 5px;
+}
+
+.header p {
+    font-size: 14px;
+    opacity: 0.9;
+}
+
+.tabs {
+    display: flex;
+    background: white;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.tab {
+    flex: 1;
+    padding: 15px;
+    text-align: center;
+    background: #f8f9fa;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    font-weight: 500;
+    transition: all 0.3s ease;
+}
+
+.tab.active {
+    background: #667eea;
+    color: white;
+}
+
+.tab-content {
+    display: none;
+    background: white;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.tab-content.active {
+    display: block;
+}
+
+.form-group {
+    margin-bottom: 20px;
+}
+
+.form-group label {
+    display: block;
+    margin-bottom: 8px;
+    font-weight: 600;
+    color: #555;
+}
+
+.form-group select,
+.form-group input {
+    width: 100%;
+    padding: 12px;
+    border: 2px solid #e1e5e9;
+    border-radius: 8px;
+    font-size: 16px;
+    transition: border-color 0.3s ease;
+}
+
+.form-group select:focus,
+.form-group input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.file-input-wrapper {
+    position: relative;
+    display: inline-block;
+    width: 100%;
+}
+
+.file-input {
+    width: 100%;
+    padding: 12px;
+    border: 2px dashed #e1e5e9;
+    border-radius: 8px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.file-input:hover {
+    border-color: #667eea;
+    background-color: #f8f9ff;
+}
+
+.file-input input[type="file"] {
+    position: absolute;
+    opacity: 0;
+    width: 100%;
+    height: 100%;
+    cursor: pointer;
+}
+
+.btn {
+    width: 100%;
+    padding: 15px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 16px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: transform 0.2s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+}
+
+.btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.message-modal {
+    display: none;
+    position: fixed;
+    z-index: 2000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    overflow: auto;
+    background-color: rgba(0,0,0,0.4);
+    backdrop-filter: blur(5px);
+    -webkit-backdrop-filter: blur(5px);
+    justify-content: center;
+    align-items: center;
+}
+
+.message-modal-content {
+    background-color: #fefefe;
+    margin: auto;
+    padding: 30px;
+    border: 1px solid #888;
+    width: 80%;
+    max-width: 400px;
+    border-radius: 10px;
+    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
+    text-align: center;
+    position: relative;
+}
+
+.message-modal-content .close-btn {
+    color: #aaa;
+    position: absolute;
+    top: 10px;
+    right: 15px;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.message-modal-content .close-btn:hover {
+    color: black;
+}
+
+.message-modal-content .spinner {
+    border: 4px solid #f3f3f3;
+    border-top: 4px solid #667eea;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 15px;
+}
+
+.message-modal-content .status-icon {
+    font-size: 48px;
+    margin-bottom: 15px;
+}
+
+.message-modal-content .status-icon.success {
+    color: #28a745;
+}
+
+.message-modal-content .status-icon.error {
+    color: #dc3545;
+}
+
+.compression-info {
+    font-size: 12px;
+    color: #666;
+    margin-top: 5px;
+    text-align: center;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.data-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 20px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.data-table th,
+.data-table td {
+    padding: 12px 8px;
+    text-align: center;
+    border-bottom: 1px solid #e1e5e9;
+    word-wrap: break-word;
+}
+
+.data-table th {
+    background-color: #f8f9fa;
+    font-weight: 600;
+    color: #555;
+    position: sticky;
+    top: 0;
+}
+
+.data-table tr:hover {
+    background-color: #f8f9ff;
+}
+
+.data-table tr:last-child td {
+    border-bottom: none;
+}
+
+.table-container {
+    overflow-x: auto;
+    max-height: 600px;
+    overflow-y: auto;
+    border-radius: 8px;
+}
+
+.filters {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 20px;
+    background: #f8f9fa;
+    border-radius: 8px;
+}
+
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.checkbox-group input[type="checkbox"] {
+    width: auto;
+}
+
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 5px;
+    flex-wrap: wrap;
+}
+
+.btn-small {
+    padding: 6px 10px;
+    font-size: 12px;
+    border-radius: 4px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+}
+
+.btn-scan {
+    padding: 12px 20px;
+    background: #28a745;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 20px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.btn-scan:hover {
+    background: #218838;
+    transform: scale(1.05);
+}
+
+.btn-edit {
+    background-color: #ffc107;
+    color: #212529;
+}
+
+.btn-delete {
+    background-color: #dc3545;
+    color: white;
+}
+
+.status-badge {
+    padding: 4px 8px;
+    border-radius: 4px;
+    font-size: 11px;
+    font-weight: bold;
+}
+
+.status-ok {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-pendente {
+    background-color: #fff3cd;
+    color: #856404;
+}
+
+.modal {
+    display: none;
+    position: fixed;
+    z-index: 1000;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0,0,0,0.5);
+    justify-content: center;
+    align-items: center;
+}
+
+.modal.show {
+    display: flex;
+}
+
+.modal-content {
+    background-color: white;
+    padding: 30px;
+    border-radius: 10px;
+    width: 90%;
+    max-width: 400px;
+    max-height: 90vh;
+    text-align: center;
+    overflow-y: auto;
+    position: relative;
+}
+
+.modal-content h3 {
+    margin-bottom: 20px;
+    color: #333;
+    font-size: 18px;
+}
+
+.modal-content input[type="password"] {
+    margin-bottom: 20px;
+}
+
+.close {
+    color: #aaa;
+    float: right;
+    font-size: 28px;
+    font-weight: bold;
+    cursor: pointer;
+}
+
+.close:hover {
+    color: black;
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 200px;
+    margin-top: 10px;
+    border-radius: 8px;
+}
+
+.no-data {
+    text-align: center;
+    padding: 40px;
+    color: #666;
+    font-style: italic;
+}
+
+@media (max-width: 768px) {
+    .container {
+        padding: 10px;
+    }
+    
+    .header h1 {
+        font-size: 20px;
+    }
+    
+    .tab {
+        padding: 12px 8px;
+        font-size: 14px;
+    }
+    
+    .data-table {
+        font-size: 12px;
+    }
+    
+    .data-table th,
+    .data-table td {
+        padding: 6px 4px;
+    }
+    
+    .filters {
+        grid-template-columns: 1fr;
+    }
+    
+    .actions {
+        flex-direction: column;
+    }
+    
+    .btn-small {
+        width: 100%;
+        margin-bottom: 2px;
+    }
+
+    .modal-content {
+        width: 95%;
+        max-height: 85vh;
+        padding: 20px;
+    }
+}
+</style>
+</head>
+<body>
+<div class="container">
+<div class="header">
+<h1>Transferências de Produtos</h1>
+<p>Gerenciamento de produtos sem estoque</p>
+</div>
+
+<div class="tabs">
+<button class="tab active" onclick="showTab('cadastro')">Cadastrar</button>
+<button class="tab" onclick="showTab('visualizar')">Visualizar</button>
+</div>
+
+<!-- Tab Cadastro -->
+<div class="tab-content active" id="cadastro">
+<form id="transferForm">
+<div class="form-group">
+<label for="fiscal">Nome do Fiscal *</label>
+<input id="fiscal" name="fiscal" placeholder="Digite o nome do fiscal" required="" type="text"/>
+</div>
+
+<div class="form-group">
+<label for="setor">Setor de Destino *</label>
+<select id="setor" name="setor" required="">
+<option value="">Selecione o setor</option>
+<option value="Consumo Limpeza">Consumo Limpeza</option>
+<option value="Consumo Padaria">Consumo Padaria</option>
+<option value="Consumo Refeitório">Consumo Refeitório</option>
+<option value="Consumo Rotisserie">Consumo Rotisserie</option>
+<option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
+<option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
+<option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
+<option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
+<option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
+<option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
+</select>
+</div>
+
+<div class="form-group">
+<label for="codigoBarras">Código de Barras *</label>
+<div style="display: flex; gap: 10px;">
+<input id="codigoBarras" inputmode="numeric" name="codigoBarras" pattern="[0-9]*" required="" style="flex: 1;" type="text"/>
+<button type="button" class="btn-scan" onclick="iniciarScanner()" title="Escanear código de barras">📷</button>
+</div>
+<div id="scannerContainer" style="display: none; margin-top: 10px;">
+<video id="scannerVideo" style="width: 100%; max-width: 400px; border-radius: 8px;"></video>
+<button type="button" class="btn" onclick="pararScanner()" style="margin-top: 10px;">Parar Scanner</button>
+</div>
+</div>
+
+<div class="form-group">
+<label for="quantidade">Quantidade *</label>
+<input id="quantidade" inputmode="decimal" name="quantidade" placeholder="0,000" required="" type="text"/>
+</div>
+
+<div class="form-group">
+<label for="foto">Foto do Código de Barras *</label>
+<div class="file-input-wrapper">
+<div class="file-input">
+<input accept="image/*" id="foto" name="foto" required="" type="file"/>
+<span id="fileLabel">📷 Tirar foto ou escolher da galeria</span>
+</div>
+</div>
+<img class="image-preview" id="imagePreview" style="display: none;"/>
+<div class="compression-info" id="compressionInfo" style="display: none;"></div>
+</div>
+
+<button class="btn" id="submitBtn" type="submit">Enviar Transferência</button>
+</form>
+</div>
+
+<!-- Tab Visualizar -->
+<div class="tab-content" id="visualizar">
+<div class="filters">
+<div class="form-group">
+<label for="filtroFiscal">Filtrar por Fiscal</label>
+<input id="filtroFiscal" placeholder="Digite o nome do fiscal" type="text"/>
+</div>
+
+<div class="form-group">
+<label for="filtroSetor">Filtrar por Setor</label>
+<select id="filtroSetor">
+<option value="">Todos os setores</option>
+<option value="Consumo Limpeza">Consumo Limpeza</option>
+<option value="Consumo Padaria">Consumo Padaria</option>
+<option value="Consumo Refeitório">Consumo Refeitório</option>
+<option value="Consumo Rotisserie">Consumo Rotisserie</option>
+<option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
+<option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
+<option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
+<option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
+<option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
+<option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
+</select>
+</div>
+
+<div class="form-group">
+<label for="filtroCodigo">Filtrar por Código</label>
+<input id="filtroCodigo" placeholder="Digite o código" type="text"/>
+</div>
+
+<div class="checkbox-group">
+<input id="filtroBaixaOk" type="checkbox"/>
+<label for="filtroBaixaOk">Apenas com Baixa OK</label>
+</div>
+
+<div class="checkbox-group">
+<input id="filtroPendente" type="checkbox"/>
+<label for="filtroPendente">Apenas Pendentes</label>
+</div>
+</div>
+
+<button class="btn" onclick="carregarDados()">🔄 Atualizar Dados</button>
+
+<div id="dadosContainer">
+<div class="table-container">
+<table class="data-table" id="dataTable">
+<thead>
+<tr>
+<th style="width: 12%;">Fiscal</th>
+<th style="width: 18%;">Setor</th>
+<th style="width: 12%;">Código</th>
+<th style="width: 8%;">Qtd</th>
+<th style="width: 8%;">Foto</th>
+<th style="width: 10%;">Baixa</th>
+<th style="width: 12%;">Data/Hora</th>
+<th style="width: 20%;">Ações</th>
+</tr>
+</thead>
+<tbody id="dataTableBody">
+<tr>
+<td class="no-data" colspan="8">Carregue os dados clicando no botão "Atualizar Dados"</td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+</div>
+
+<!-- Modal para senha -->
+<div class="modal" id="passwordModal">
+<div class="modal-content">
+<span class="close" onclick="closePasswordModal()">×</span>
+<h3>Digite a senha</h3>
+<input id="passwordInput" placeholder="Senha" type="password"/>
+<button class="btn" onclick="validatePassword()">Confirmar</button>
+</div>
+</div>
+
+<!-- Modal para edição -->
+<div class="modal" id="editModal">
+<div class="modal-content">
+<span class="close" onclick="closeEditModal()">×</span>
+<h3>Editar Item</h3>
+<form id="editForm">
+<div class="form-group">
+<label for="editFiscal">Nome do Fiscal *</label>
+<input id="editFiscal" name="editFiscal" placeholder="Digite o nome do fiscal" required="" type="text"/>
+</div>
+
+<div class="form-group">
+<label for="editSetor">Setor de Destino *</label>
+<select id="editSetor" name="editSetor" required="">
+<option value="">Selecione o setor</option>
+<option value="Consumo Limpeza">Consumo Limpeza</option>
+<option value="Consumo Padaria">Consumo Padaria</option>
+<option value="Consumo Refeitório">Consumo Refeitório</option>
+<option value="Consumo Rotisserie">Consumo Rotisserie</option>
+<option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
+<option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
+<option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
+<option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
+<option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
+<option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
+</select>
+</div>
+
+<div class="form-group">
+<label for="editCodigoBarras">Código de Barras *</label>
+<input id="editCodigoBarras" inputmode="numeric" name="editCodigoBarras" pattern="[0-9]*" required="" type="text"/>
+</div>
+
+<div class="form-group">
+<label for="editQuantidade">Quantidade *</label>
+<input id="editQuantidade" inputmode="decimal" name="editQuantidade" placeholder="0,000" required="" type="text"/>
+</div>
+
+<button class="btn" type="submit">Salvar Edição</button>
+</form>
+</div>
+</div>
+
+<!-- Modal de Mensagens -->
+<div class="message-modal" id="messageModal">
+<div class="message-modal-content">
+<span class="close-btn" onclick="closeMessageModal()">×</span>
+<div class="spinner" id="modalSpinner" style="display: none;"></div>
+<div class="status-icon" id="modalStatusIcon" style="display: none;"></div>
+<p id="modalMessageText"></p>
+</div>
+</div>
+
+<!-- Firebase SDK - IMPORTANTE: Manter esta ordem! -->
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.22.0/firebase-storage-compat.js"></script>
+
+<!-- Biblioteca de Scanner de Código de Barras -->
+<script src="https://unpkg.com/@zxing/library@0.19.1/umd/index.min.js"></script>
+
+<!-- Configuração e App -->
+<script src="firebase-config.js"></script>
+<script src="app.js"></script>
+<script src="barcode-scanner.js"></script>
+</body>
+</html>
