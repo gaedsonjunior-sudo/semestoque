@@ -57,19 +57,26 @@ window.validatePassword = function() {
   
   if (senha === senhaCorreta) {
     console.log("Senha correta! Executando ação...");
+    
+    // IMPORTANTE: Salvar as variáveis ANTES de fechar o modal
+    const acaoParaExecutar = acaoPendente;
+    const idParaExecutar = itemIdPendente;
+    
+    // Agora sim fecha o modal (isso reseta as variáveis globais)
     closePasswordModal();
     
-    if (acaoPendente === 'editar') {
+    // Executa a ação com as variáveis salvas
+    if (acaoParaExecutar === 'editar') {
       console.log("Chamando abrirModalEdicao...");
-      window.abrirModalEdicao(itemIdPendente);
-    } else if (acaoPendente === 'excluir') {
+      window.abrirModalEdicao(idParaExecutar);
+    } else if (acaoParaExecutar === 'excluir') {
       console.log("Chamando excluirItem...");
-      window.excluirItem(itemIdPendente);
-    } else if (acaoPendente === 'baixar') {
+      window.excluirItem(idParaExecutar);
+    } else if (acaoParaExecutar === 'baixar') {
       console.log("Chamando marcarComoBaixado...");
-      window.marcarComoBaixado(itemIdPendente);
+      window.marcarComoBaixado(idParaExecutar);
     } else {
-      console.log("ERRO: Ação não reconhecida:", acaoPendente);
+      console.log("ERRO: Ação não reconhecida:", acaoParaExecutar);
     }
   } else {
     console.log("Senha incorreta!");
