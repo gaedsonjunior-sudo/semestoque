@@ -323,28 +323,84 @@ function renderizarTabela(data) {
   }
 
   data.forEach(item => {
-    tbody.innerHTML += `
-      <tr>
-        <td>${item.fiscal}</td>
-        <td>${item.setor}</td>
-        <td>${item.codigo_barras}</td>
-        <td>${item.quantidade}</td>
-        <td><a href="${item.foto_url}" target="_blank">📷</a></td>
-        <td>
-          <span class="status-badge ${item.baixa_ok ? "status-ok" : "status-pendente"}">
-            ${item.baixa_ok ? "OK" : "Pendente"}
-          </span>
-        </td>
-        <td>${new Date(item.created_at).toLocaleString('pt-BR')}</td>
-        <td>
-          <div class="actions">
-            <button class="btn-small btn-edit" onclick="solicitarSenhaParaAcao('editar', ${item.id})">✏️ Editar</button>
-            <button class="btn-small btn-delete" onclick="solicitarSenhaParaAcao('excluir', ${item.id})">🗑️ Excluir</button>
-            ${!item.baixa_ok ? `<button class="btn-small" style="background-color: #28a745; color: white;" onclick="solicitarSenhaParaAcao('baixar', ${item.id})">✓ Baixar</button>` : ''}
-          </div>
-        </td>
-      </tr>
-    `;
+    const tr = document.createElement('tr');
+    
+    // Fiscal
+    const tdFiscal = document.createElement('td');
+    tdFiscal.textContent = item.fiscal;
+    tr.appendChild(tdFiscal);
+    
+    // Setor
+    const tdSetor = document.createElement('td');
+    tdSetor.textContent = item.setor;
+    tr.appendChild(tdSetor);
+    
+    // Código
+    const tdCodigo = document.createElement('td');
+    tdCodigo.textContent = item.codigo_barras;
+    tr.appendChild(tdCodigo);
+    
+    // Quantidade
+    const tdQuantidade = document.createElement('td');
+    tdQuantidade.textContent = item.quantidade;
+    tr.appendChild(tdQuantidade);
+    
+    // Foto
+    const tdFoto = document.createElement('td');
+    const linkFoto = document.createElement('a');
+    linkFoto.href = item.foto_url;
+    linkFoto.target = '_blank';
+    linkFoto.textContent = '📷';
+    tdFoto.appendChild(linkFoto);
+    tr.appendChild(tdFoto);
+    
+    // Status
+    const tdStatus = document.createElement('td');
+    const spanStatus = document.createElement('span');
+    spanStatus.className = `status-badge ${item.baixa_ok ? 'status-ok' : 'status-pendente'}`;
+    spanStatus.textContent = item.baixa_ok ? 'OK' : 'Pendente';
+    tdStatus.appendChild(spanStatus);
+    tr.appendChild(tdStatus);
+    
+    // Data/Hora
+    const tdData = document.createElement('td');
+    tdData.textContent = new Date(item.created_at).toLocaleString('pt-BR');
+    tr.appendChild(tdData);
+    
+    // Ações
+    const tdAcoes = document.createElement('td');
+    const divActions = document.createElement('div');
+    divActions.className = 'actions';
+    
+    // Botão Editar
+    const btnEditar = document.createElement('button');
+    btnEditar.className = 'btn-small btn-edit';
+    btnEditar.textContent = '✏️ Editar';
+    btnEditar.onclick = () => solicitarSenhaParaAcao('editar', item.id);
+    divActions.appendChild(btnEditar);
+    
+    // Botão Excluir
+    const btnExcluir = document.createElement('button');
+    btnExcluir.className = 'btn-small btn-delete';
+    btnExcluir.textContent = '🗑️ Excluir';
+    btnExcluir.onclick = () => solicitarSenhaParaAcao('excluir', item.id);
+    divActions.appendChild(btnExcluir);
+    
+    // Botão Baixar (apenas se não estiver baixado)
+    if (!item.baixa_ok) {
+      const btnBaixar = document.createElement('button');
+      btnBaixar.className = 'btn-small';
+      btnBaixar.style.backgroundColor = '#28a745';
+      btnBaixar.style.color = 'white';
+      btnBaixar.textContent = '✓ Baixar';
+      btnBaixar.onclick = () => solicitarSenhaParaAcao('baixar', item.id);
+      divActions.appendChild(btnBaixar);
+    }
+    
+    tdAcoes.appendChild(divActions);
+    tr.appendChild(tdAcoes);
+    
+    tbody.appendChild(tr);
   });
 }
 
