@@ -69,19 +69,19 @@ document.getElementById("transferForm").addEventListener("submit", async (e) => 
 
     const fileName = `${Date.now()}_${foto.name}`;
 
-    const { error: uploadError } = await supabase
+    const { error: uploadError } = await supabaseClient
       .storage
       .from("transferencias")
       .upload(fileName, foto);
 
     if (uploadError) throw uploadError;
 
-    const { data: imageData } = supabase
+    const { data: imageData } = supabaseClient
       .storage
       .from("transferencias")
       .getPublicUrl(fileName);
 
-    const { error } = await supabase
+    const { error } = await supabaseClient
       .from("transferencias")
       .insert([{
         fiscal,
