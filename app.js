@@ -1,151 +1,148 @@
-function showTab(id) {
+// ================== TABS ==================
+function showTab(tabId) {
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
-  document.getElementById(id).classList.add("active");
+  document.querySelectorAll(".tab-content").forEach(c => c.classList.remove("active"));
 
-  if (id === "visualizar") carregarVisualizacao();
+  document.querySelector(`.tab[onclick*="${tabId}"]`).classList.add("active");
+  document.getElementById(tabId).classList.add("active");
 }
 
-function solicitarSenhaAdmin() {
-  const senha = prompt("Senha de administrador:");
-  if (senha !== CONFIG.SENHA_ADMIN) {
-    alert("Senha incorreta");
-    return false;
+// ================== MODAL MENSAGEM ==================
+function showMessage(text, type) {
+  const modal = document.getElementById("messageModal");
+  const spinner = document.getElementById("modalSpinner");
+  const icon = document.getElementById("modalStatusIcon");
+  const msg = document.getElementById("modalMessageText");
+
+  spinner.style.display = type === "loading" ? "block" : "none";
+  icon.style.display = type === "success" || type === "error" ? "block" : "none";
+  icon.textContent = type === "success" ? "✅" : type === "error" ? "❌" : "";
+
+  msg.textContent = text;
+  modal.style.display = "flex";
+}
+
+function closeMessageModal() {
+  document.getElementById("messageModal").style.display = "none";
+}
+
+// ================== MÁSCARA QUANTIDADE ==================
+document.getElementById("quantidade").addEventListener("input", (e) => {
+  let v = e.target.value.replace(/\D/g, "");
+  if (v.length > 3) {
+    v = v.slice(0, -3) + "," + v.slice(-3);
   }
-  return true;
-}
+  e.target.value = v;
+});
 
-async function enviar() {
+// ================== PREVIEW FOTO ==================
+document.getElementById("foto").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+
+  const preview = document.getElementById("imagePreview");
+  preview.src = URL.createObjectURL(file);
+  preview.style.display = "block";
+});
+
+// ================== ENVIO ==================
+document.getElementById("transferForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  showMessage("Enviando...", "loading");
+
   try {
-    const fiscal = fiscalInput().value;
-    const setor = setorInput().value;
-    const codigo = codigoInput().value;
-    const quantidade = quantidadeInput().value;
-    const foto = document.getElementById("foto").files[0];
+    const fiscalInput = document.getElementById("fiscal");
+    const setorInput = document.getElementById("setor");
+    const codigoInput = document.getElementById("codigoBarras");
+    const quantidadeInput = document.getElementById("quantidade");
+    const fotoInput = document.getElementById("foto");
 
-    if (!fiscal || !setor || !codigo || !quantidade) {
-      alert("Preencha todos os campos");
-      return;
+    const fiscal = fiscalInput.value.trim();
+    const setor = setorInput.value;
+    const codigoBarras = codigoInput.value.trim();
+    const quantidade = parseFloat(quantidadeInput.value.replace(",", "."));
+    const foto = fotoInput.files[0];
+
+    if (!fiscal || !setor || !codigoBarras || !quantidade || !foto) {
+      throw new Error("Preencha todos os campos");
     }
 
-    let fotoUrl = null;
+    const fileName = `${Date.now()}_${foto.name}`;
 
-    if (foto) {
-      const fileName = `${Date.now()}_${foto.name}`;
+    const { error: uploadError } = await supabase
+      .storage
+      .from("transferencias")
+      .upload(fileName, foto);
 
-      const { error: uploadError } = await supabaseClient
-        .storage
-        .from("transferencias")
-        .upload(fileName, foto);
+    if (uploadError) throw uploadError;
 
-      if (uploadError) throw uploadError;
+    const { data: imageData } = supabase
+      .storage
+      .from("transferencias")
+      .getPublicUrl(fileName);
 
-      fotoUrl = supabaseClient
-        .storage
-        .from("transferencias")
-        .getPublicUrl(fileName).data.publicUrl;
-    }
-
-    const { error } = await supabaseClient
+    const { error } = await supabase
       .from("transferencias")
       .insert([{
         fiscal,
         setor,
-        codigo_barras: codigo,
+        codigo_barras: codigoBarras,
         quantidade,
-        foto_url: fotoUrl,
+        foto_url: imageData.publicUrl,
         baixa_ok: false
       }]);
 
     if (error) throw error;
 
-    alert("Salvo com sucesso");
-    limparFormulario();
+    showMessage("Transferência enviada com sucesso!", "success");
+    e.target.reset();
+    document.getElementById("imagePreview").style.display = "none";
 
-  } catch (e) {
-    alert("Erro ao salvar");
-    console.error(e);
+  } catch (err) {
+    console.error(err);
+    showMessage(err.message, "error");
   }
-}
+});
 
-async function carregarVisualizacao() {
-  const { data, error } = await supabaseClient
+// ================== VISUALIZAR ==================
+async function carregarDados() {
+  showMessage("Carregando dados...", "loading");
+
+  const { data, error } = await supabase
     .from("transferencias")
     .select("*")
-    .order("id", { ascending: false });
+    .order("created_at", { ascending: false });
 
-  if (error) return;
+  if (error) {
+    showMessage("Erro ao carregar", "error");
+    return;
+  }
 
-  const tbody = document.getElementById("lista");
+  const tbody = document.getElementById("dataTableBody");
   tbody.innerHTML = "";
 
+  if (data.length === 0) {
+    tbody.innerHTML = `<tr><td colspan="8" class="no-data">Nenhum dado</td></tr>`;
+  }
+
   data.forEach(item => {
-    const tr = document.createElement("tr");
-
-    tr.innerHTML = `
-      <td>${item.fiscal}</td>
-      <td>${item.setor}</td>
-      <td>${item.codigo_barras}</td>
-      <td>${item.quantidade}</td>
-      <td>${item.baixa_ok ? "Resolvido" : "Pendente"}</td>
-      <td>
-        <button onclick="editarItem(${item.id})">✏️</button>
-        <button onclick="baixarItem(${item.id})">✅</button>
-        <button onclick="excluirItem(${item.id})">🗑️</button>
-      </td>
+    tbody.innerHTML += `
+      <tr>
+        <td>${item.fiscal}</td>
+        <td>${item.setor}</td>
+        <td>${item.codigo_barras}</td>
+        <td>${item.quantidade}</td>
+        <td><a href="${item.foto_url}" target="_blank">📷</a></td>
+        <td>
+          <span class="status-badge ${item.baixa_ok ? "status-ok" : "status-pendente"}">
+            ${item.baixa_ok ? "OK" : "Pendente"}
+          </span>
+        </td>
+        <td>${new Date(item.created_at).toLocaleString()}</td>
+        <td>-</td>
+      </tr>
     `;
-
-    tbody.appendChild(tr);
   });
+
+  closeMessageModal();
 }
-
-async function editarItem(id) {
-  if (!solicitarSenhaAdmin()) return;
-
-  const fiscal = prompt("Fiscal:");
-  const setor = prompt("Setor:");
-  const quantidade = prompt("Quantidade:");
-
-  await supabaseClient
-    .from("transferencias")
-    .update({ fiscal, setor, quantidade })
-    .eq("id", id);
-
-  carregarVisualizacao();
-}
-
-async function baixarItem(id) {
-  if (!solicitarSenhaAdmin()) return;
-
-  await supabaseClient
-    .from("transferencias")
-    .update({ baixa_ok: true })
-    .eq("id", id);
-
-  carregarVisualizacao();
-}
-
-async function excluirItem(id) {
-  if (!solicitarSenhaAdmin()) return;
-
-  if (!confirm("Excluir registro?")) return;
-
-  await supabaseClient
-    .from("transferencias")
-    .delete()
-    .eq("id", id);
-
-  carregarVisualizacao();
-}
-
-function limparFormulario() {
-  fiscalInput().value = "";
-  setorInput().value = "";
-  codigoInput().value = "";
-  quantidadeInput().value = "";
-  document.getElementById("foto").value = "";
-}
-
-const fiscalInput = () => document.getElementById("fiscal");
-const setorInput = () => document.getElementById("setor");
-const codigoInput = () => document.getElementById("codigo");
-const quantidadeInput = () => document.getElementById("quantidade");
