@@ -9,6 +9,6 @@
   );
 
   const CONFIG = {
-    SENHA_ADMIN: "admin123" // pode manter igual
+    SENHA_ADMIN: "admin123"
   };
 </script>
