@@ -1,24 +1,28 @@
-let codeReader = null;
+let codeReader;
 
 function iniciarScanner() {
-  const container = document.getElementById("scannerContainer");
+  const modal = document.getElementById("scannerModal");
   const video = document.getElementById("scannerVideo");
 
-  container.style.display = "block";
+  modal.style.display = "block";
 
-  codeReader = new ZXing.BrowserBarcodeReader();
+  if (!codeReader) {
+    codeReader = new ZXing.BrowserBarcodeReader();
+  }
 
   codeReader.decodeFromVideoDevice(null, video, (result, err) => {
     if (result) {
-      document.getElementById("codigoBarras").value = result.text;
-      pararScanner();
+      document.getElementById("codigo").value = result.text;
+      fecharScanner();
     }
   });
 }
 
-function pararScanner() {
+function fecharScanner() {
+  const modal = document.getElementById("scannerModal");
+  modal.style.display = "none";
+
   if (codeReader) {
     codeReader.reset();
   }
-  document.getElementById("scannerContainer").style.display = "none";
 }
