@@ -6,37 +6,17 @@ window.iniciarScanner = async function() {
   const modal = document.getElementById("scannerModal");
   modal.style.display = "block";
   
-  // Limpa o container e prepara layout
+  // Limpa o container e prepara layout centralizado
   const container = document.getElementById('scannerVideo');
   container.innerHTML = `
     <div style="
       display: flex;
-      flex-direction: column;
       align-items: center;
       justify-content: center;
       min-height: 100vh;
-      padding: 20px;
-      box-sizing: border-box;
+      width: 100%;
     ">
-      <div id="scannerInstructions" style="
-        color: white;
-        text-align: center;
-        margin-bottom: 20px;
-        font-size: 16px;
-        font-weight: bold;
-        text-shadow: 2px 2px 4px rgba(0,0,0,0.8);
-        max-width: 90%;
-      ">
-        📷 Posicione o código de barras no retângulo vermelho
-        <div style="font-size: 14px; margin-top: 10px; font-weight: normal;">
-          Mantenha estável por alguns segundos
-        </div>
-      </div>
-      <div id="reader" style="
-        width: 100%;
-        max-width: 500px;
-        border: none;
-      "></div>
+      <div id="reader" style="width: 90%; max-width: 500px;"></div>
     </div>
   `;
   
@@ -51,7 +31,14 @@ window.iniciarScanner = async function() {
       { facingMode: "environment" }, // Usa câmera traseira
       {
         fps: 10,
-        qrbox: { width: 250, height: 150 },
+        qrbox: function(viewfinderWidth, viewfinderHeight) {
+          // Retângulo responsivo - 70% da largura, altura fixa
+          let qrboxWidth = Math.min(viewfinderWidth * 0.7, 300);
+          return {
+            width: qrboxWidth,
+            height: 150
+          };
+        },
         aspectRatio: 1.777778,
         formatsToSupport: [
           Html5QrcodeSupportedFormats.EAN_13,
