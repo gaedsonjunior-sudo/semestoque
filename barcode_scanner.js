@@ -20,9 +20,16 @@ window.iniciarScanner = function() {
       target: document.getElementById('scannerVideo'),
       constraints: {
         facingMode: "environment",
-        width: { min: 640, ideal: 1920 },
-        height: { min: 480, ideal: 1080 }
+        aspectRatio: { min: 1, max: 2 },
+        width: { min: 640, ideal: 1280, max: 1920 },
+        height: { min: 480, ideal: 720, max: 1080 }
       },
+      area: { // Define área de leitura (toda a tela)
+        top: "0%",
+        right: "0%",
+        left: "0%",
+        bottom: "0%"
+      }
     },
     decoder: {
       readers: [
@@ -36,8 +43,8 @@ window.iniciarScanner = function() {
     },
     locate: true,
     locator: {
-      patchSize: "medium",
-      halfSample: true
+      patchSize: "large",
+      halfSample: false
     },
     numOfWorkers: navigator.hardwareConcurrency || 4,
     frequency: 10,
@@ -51,6 +58,9 @@ window.iniciarScanner = function() {
     
     console.log("✅ Quagga inicializado com sucesso");
     Quagga.start();
+    
+    // Ajusta o CSS dos elementos criados pelo Quagga
+    ajustarCSSCamera();
     
     // Adiciona overlay visual
     adicionarOverlayVisual();
@@ -132,6 +142,36 @@ window.iniciarScanner = function() {
   });
 }
 
+function ajustarCSSCamera() {
+  // Espera um pouco para os elementos serem criados
+  setTimeout(function() {
+    // Pega todos os elementos video e canvas criados pelo Quagga
+    var videos = document.querySelectorAll('#scannerVideo video');
+    var canvases = document.querySelectorAll('#scannerVideo canvas');
+    
+    // Ajusta o vídeo
+    videos.forEach(function(video) {
+      video.style.width = '100%';
+      video.style.height = '100%';
+      video.style.objectFit = 'cover';
+      video.style.position = 'absolute';
+      video.style.top = '0';
+      video.style.left = '0';
+    });
+    
+    // Ajusta os canvas
+    canvases.forEach(function(canvas) {
+      canvas.style.width = '100%';
+      canvas.style.height = '100%';
+      canvas.style.position = 'absolute';
+      canvas.style.top = '0';
+      canvas.style.left = '0';
+    });
+    
+    console.log("✅ CSS da câmera ajustado");
+  }, 500);
+}
+
 function desenharDeteccao(result) {
   var drawingCtx = Quagga.canvas.ctx.overlay;
   var drawingCanvas = Quagga.canvas.dom.overlay;
@@ -202,32 +242,49 @@ function adicionarOverlayVisual() {
   var guia = document.createElement('div');
   guia.id = 'scanner-guia';
   guia.style.position = 'absolute';
-  guia.style.top = '25%';
-  guia.style.left = '10%';
+  guia.style.top = '50%';
+  guia.style.left = '50%';
+  guia.style.transform = 'translate(-50%, -50%)';
   guia.style.width = '80%';
-  guia.style.height = '30%';
-  guia.style.border = '3px dashed rgba(255, 255, 255, 0.8)';
+  guia.style.maxWidth = '500px';
+  guia.style.height = '200px';
+  guia.style.border = '3px dashed rgba(255, 255, 255, 0.9)';
   guia.style.borderRadius = '10px';
   guia.style.zIndex = '10000';
   guia.style.pointerEvents = 'none';
-  guia.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.5)';
+  guia.style.boxShadow = '0 0 0 9999px rgba(0,0,0,0.4)';
   
   var texto = document.createElement('div');
   texto.style.position = 'absolute';
-  texto.style.top = '-50px';
+  texto.style.top = '-60px';
   texto.style.left = '50%';
   texto.style.transform = 'translateX(-50%)';
   texto.style.color = 'white';
-  texto.style.fontSize = '18px';
+  texto.style.fontSize = '16px';
   texto.style.fontWeight = 'bold';
   texto.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
   texto.style.backgroundColor = 'rgba(0,0,0,0.7)';
   texto.style.padding = '12px 24px';
   texto.style.borderRadius = '8px';
   texto.style.whiteSpace = 'nowrap';
-  texto.textContent = '📷 Posicione o código de barras aqui';
+  texto.textContent = '📷 Centralize o código de barras na área';
+  
+  var dica = document.createElement('div');
+  dica.style.position = 'absolute';
+  dica.style.bottom = '-50px';
+  dica.style.left = '50%';
+  dica.style.transform = 'translateX(-50%)';
+  dica.style.color = 'white';
+  dica.style.fontSize = '14px';
+  dica.style.textShadow = '2px 2px 4px rgba(0,0,0,0.8)';
+  dica.style.backgroundColor = 'rgba(0,0,0,0.6)';
+  dica.style.padding = '8px 16px';
+  dica.style.borderRadius = '6px';
+  dica.style.whiteSpace = 'nowrap';
+  dica.textContent = 'Mantenha estável por 2 segundos';
   
   guia.appendChild(texto);
+  guia.appendChild(dica);
   modal.appendChild(guia);
 }
 
