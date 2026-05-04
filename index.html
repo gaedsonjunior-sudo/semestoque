@@ -148,10 +148,14 @@ body {
 /* ===== MAIN CONTENT ===== */
 .main {
   flex: 1;
-  padding: 28px 24px;
-  max-width: 960px;
-  margin: 0 auto;
+  padding: 28px 32px;
   width: 100%;
+}
+
+/* Cadastro centralizado, visualizar usa tela toda */
+#cadastro {
+  max-width: 720px;
+  margin: 0 auto;
 }
 
 /* ===== PAGE HEADER ===== */
@@ -413,7 +417,7 @@ select.form-control {
   overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  max-height: 60vh;
+  max-height: calc(100vh - 340px);
   overflow-y: auto;
 }
 
@@ -421,7 +425,18 @@ table {
   width: 100%;
   border-collapse: collapse;
   font-size: 13.5px;
+  table-layout: fixed;
 }
+
+thead th:nth-child(1) { width: 110px; }  /* Fiscal */
+thead th:nth-child(2) { width: 160px; }  /* Setor */
+thead th:nth-child(3) { width: 130px; }  /* Código */
+thead th:nth-child(4) { width: auto; }   /* Descrição — flex */
+thead th:nth-child(5) { width: 60px; }   /* Qtd */
+thead th:nth-child(6) { width: 50px; }   /* Foto */
+thead th:nth-child(7) { width: 90px; }   /* Status */
+thead th:nth-child(8) { width: 130px; }  /* Data/Hora */
+thead th:nth-child(9) { width: 170px; }  /* Ações */
 
 thead {
   position: sticky;
@@ -459,7 +474,6 @@ tbody tr:hover { background: var(--blue-light); }
 }
 
 .td-desc {
-  max-width: 160px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -666,6 +680,7 @@ td .actions { display: flex; gap: 4px; flex-wrap: wrap; }
 
   .topnav { padding: 0 16px; }
   .main { padding: 16px; }
+  #cadastro { max-width: 100%; }
 
   .form-grid { grid-template-columns: 1fr; }
   .form-group.full { grid-column: 1; }
@@ -692,7 +707,9 @@ td .actions { display: flex; gap: 4px; flex-wrap: wrap; }
 
 /* ===== DESKTOP REFINEMENTS ===== */
 @media (min-width: 769px) {
-  .main { padding: 32px 28px; }
+  .filters-grid {
+    grid-template-columns: 1fr 1fr 1fr auto;
+  }
 }
 
 /* ===== SUMMARY ROW ===== */
