@@ -168,28 +168,31 @@ window.marcarComoBaixado = async function(id) {
 // ================== PRODUTOS (LOOKUP) ==================
 window.carregarCacheProdutos = async function() {
   try {
-    const { data, error } = await supabase
+    const { data, error, status } = await supabase
       .from("produtos")
       .select("codigo_barras, descricao");
 
     if (error) {
-      // Tabela pode não existir ainda — falha silenciosa
-      console.warn("Tabela 'produtos' não encontrada ou erro:", error.message);
+      console.warn("Tabela 'produtos' não encontrada ou erro:", error.message, "status:", status);
+      console.warn("Detalhe:", JSON.stringify(error));
       return;
     }
 
     cacheProdutos = {};
     (data || []).forEach(p => {
-      cacheProdutos[p.codigo_barras] = p.descricao;
+      const key = String(p.codigo_barras).trim();
+      cacheProdutos[key] = p.descricao;
     });
-    console.log(`Cache de produtos carregado: ${Object.keys(cacheProdutos).length} itens`);
+    console.log(`Cache de produtos carregado: ${Object.keys(cacheProdutos).length} itens`, cacheProdutos);
   } catch (err) {
     console.warn("Erro ao carregar produtos:", err);
   }
 }
 
 function getDescricaoProduto(codigo) {
-  return cacheProdutos[codigo] || null;
+  if (!codigo) return null;
+  const key = String(codigo).trim();
+  return cacheProdutos[key] || null;
 }
 
 // ================== FILTROS ==================
