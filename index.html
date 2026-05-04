@@ -160,7 +160,7 @@ body {
 
 /* ===== PAGE HEADER ===== */
 .page-header {
-  margin-bottom: 14px;
+  margin-bottom: 24px;
 }
 
 .page-title {
@@ -726,8 +726,8 @@ td .actions { display: flex; gap: 4px; flex-wrap: nowrap; justify-content: cente
 /* ===== SUMMARY ROW ===== */
 .summary-bar {
   display: flex;
-  gap: 8px;
-  margin-bottom: 0;
+  gap: 12px;
+  margin-bottom: 16px;
   flex-wrap: wrap;
 }
 
@@ -735,13 +735,13 @@ td .actions { display: flex; gap: 4px; flex-wrap: nowrap; justify-content: cente
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: 20px;
-  padding: 4px 11px;
-  font-size: 12px;
+  padding: 6px 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-secondary);
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 5px;
 }
 
 .summary-pill span { color: var(--text-primary); }
@@ -888,16 +888,21 @@ a.photo-link:hover { transform: scale(1.2); }
 
     <!-- TAB VISUALIZAR -->
     <div class="tab-content" id="visualizar">
-      <!-- Filtros inline (sem page-header para ganhar espaço) -->
-      <div class="card" style="margin-bottom: 10px; padding: 14px 18px;">
-        <div class="card-title" style="margin-bottom: 10px;">🔍 Filtros</div>
-        <div class="filters-grid" style="gap:8px;">
-          <div class="form-group" style="gap:3px;">
-            <label for="filtroFiscal" style="font-size:11px;">Fiscal</label>
-            <input class="form-control" id="filtroFiscal" placeholder="Nome do fiscal" type="text" style="padding:7px 10px;font-size:13px;"/>
+      <div class="page-header">
+        <h1 class="page-title">Transferências</h1>
+        <p class="page-subtitle">Histórico e gerenciamento de registros</p>
+      </div>
+
+      <!-- Filtros -->
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-title">🔍 Filtros</div>
+        <div class="filters-grid">
+          <div class="form-group">
+            <label for="filtroFiscal">Fiscal</label>
+            <input class="form-control" id="filtroFiscal" placeholder="Nome do fiscal" type="text"/>
           </div>
-          <div class="form-group" style="gap:3px;">
-            <label for="filtroSetor" style="font-size:11px;">Setor</label>
+          <div class="form-group">
+            <label for="filtroSetor">Setor</label>
             <select class="form-control" id="filtroSetor">
               <option value="">Todos</option>
               <optgroup label="Consumo">
@@ -927,17 +932,17 @@ a.photo-link:hover { transform: scale(1.2); }
               <option value="Outros">Outros</option>
             </select>
           </div>
-          <div class="form-group" style="gap:3px;">
-            <label for="filtroCodigo" style="font-size:11px;">Código</label>
-            <input class="form-control" id="filtroCodigo" placeholder="Código de barras" type="text" style="padding:7px 10px;font-size:13px;"/>
+          <div class="form-group">
+            <label for="filtroCodigo">Código</label>
+            <input class="form-control" id="filtroCodigo" placeholder="Código de barras" type="text"/>
           </div>
-          <div class="form-group" style="justify-content: flex-end; gap:3px;">
-            <label style="font-size:11px;">&nbsp;</label>
-            <div class="filters-checkboxes" style="gap:12px;">
-              <label class="check-label" style="font-size:12px;">
+          <div class="form-group" style="justify-content: flex-end;">
+            <label>&nbsp;</label>
+            <div class="filters-checkboxes">
+              <label class="check-label">
                 <input id="filtroBaixaOk" type="checkbox"/> Baixados
               </label>
-              <label class="check-label" style="font-size:12px;">
+              <label class="check-label">
                 <input id="filtroPendente" type="checkbox"/> Pendentes
               </label>
             </div>
@@ -945,16 +950,13 @@ a.photo-link:hover { transform: scale(1.2); }
         </div>
       </div>
 
-      <!-- Summary + Toolbar compactos numa linha -->
-      <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:8px; flex-wrap:wrap; gap:6px;">
-        <div class="summary-bar" id="summaryBar" style="margin-bottom:0; flex:1;"></div>
-        <div style="display:flex; align-items:center; gap:10px;">
-          <span style="font-size:13px; color:var(--text-muted);" id="countLabel"></span>
-          <button class="btn btn-outline" style="padding:6px 14px; font-size:13px;" onclick="carregarDados()">🔄 Atualizar</button>
-        </div>
-      </div>
-      <div class="toolbar" style="display:none;">
-        <span></span>
+      <!-- Summary -->
+      <div class="summary-bar" id="summaryBar"></div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div style="font-size: 13px; color: var(--text-muted);" id="countLabel"></div>
+        <button class="btn btn-outline" onclick="carregarDados()">🔄 Atualizar</button>
       </div>
 
       <!-- Table -->
