@@ -2,710 +2,1080 @@
 <html lang="pt-BR">
 <head>
 <meta charset="utf-8"/>
-<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
-<title>Transferências de Produtos</title>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
+<title>Transferências · Sistema de Controle</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
 <style>
-* {
-    margin: 0;
-    padding: 0;
-    box-sizing: border-box;
+/* ===== DESIGN TOKENS ===== */
+:root {
+  --bg: #F4F5F7;
+  --surface: #FFFFFF;
+  --surface-alt: #F9FAFB;
+  --border: #E5E7EB;
+  --border-focus: #3B82F6;
+
+  --text-primary: #111827;
+  --text-secondary: #6B7280;
+  --text-muted: #9CA3AF;
+
+  --blue: #3B82F6;
+  --blue-dark: #2563EB;
+  --blue-light: #EFF6FF;
+  --blue-subtle: #DBEAFE;
+
+  --green: #10B981;
+  --green-light: #ECFDF5;
+  --amber: #F59E0B;
+  --amber-light: #FFFBEB;
+  --red: #EF4444;
+  --red-light: #FEF2F2;
+
+  --shadow-sm: 0 1px 2px rgba(0,0,0,0.05);
+  --shadow: 0 1px 3px rgba(0,0,0,0.1), 0 1px 2px rgba(0,0,0,0.06);
+  --shadow-md: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -1px rgba(0,0,0,0.06);
+  --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
+
+  --radius-sm: 6px;
+  --radius: 10px;
+  --radius-lg: 14px;
+
+  --font: 'DM Sans', sans-serif;
+  --font-mono: 'DM Mono', monospace;
 }
+
+/* ===== RESET & BASE ===== */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
 body {
-    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
-    background-color: #f5f5f5;
-    color: #333;
-    line-height: 1.6;
+  font-family: var(--font);
+  background: var(--bg);
+  color: var(--text-primary);
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+  min-height: 100vh;
 }
 
-.container {
-    max-width: 100%;
-    margin: 0 auto;
-    padding: 20px;
+/* ===== LAYOUT ===== */
+.app-shell {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
 }
 
-.header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 20px;
-    text-align: center;
-    margin-bottom: 20px;
-    border-radius: 10px;
+/* ===== TOP NAV ===== */
+.topnav {
+  background: var(--surface);
+  border-bottom: 1px solid var(--border);
+  padding: 0 24px;
+  height: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  position: sticky;
+  top: 0;
+  z-index: 100;
+  box-shadow: var(--shadow-sm);
 }
 
-.header h1 {
-    font-size: 24px;
-    margin-bottom: 5px;
+.topnav-brand {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.header p {
-    font-size: 14px;
-    opacity: 0.9;
+.brand-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--blue);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
 }
 
-.tabs {
-    display: flex;
-    background: white;
-    border-radius: 10px;
-    margin-bottom: 20px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+.brand-name {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text-primary);
+  letter-spacing: -0.3px;
 }
 
-.tab {
-    flex: 1;
-    padding: 15px;
-    text-align: center;
-    background: #f8f9fa;
-    border: none;
-    cursor: pointer;
-    font-size: 16px;
-    font-weight: 500;
-    transition: all 0.3s ease;
+.brand-tag {
+  font-size: 11px;
+  font-weight: 500;
+  color: var(--text-muted);
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
 }
 
-.tab.active {
-    background: #667eea;
-    color: white;
+/* ===== TAB NAV (desktop) ===== */
+.tab-nav {
+  display: flex;
+  gap: 4px;
+  background: var(--surface-alt);
+  border: 1px solid var(--border);
+  padding: 4px;
+  border-radius: var(--radius);
 }
 
-.tab-content {
-    display: none;
-    background: white;
-    border-radius: 10px;
-    padding: 20px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+.tab-btn {
+  padding: 7px 18px;
+  border: none;
+  background: transparent;
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.15s ease;
 }
 
-.tab-content.active {
-    display: block;
+.tab-btn.active {
+  background: var(--surface);
+  color: var(--text-primary);
+  box-shadow: var(--shadow-sm);
+}
+
+.tab-btn:hover:not(.active) {
+  color: var(--text-primary);
+  background: rgba(0,0,0,0.04);
+}
+
+/* ===== MAIN CONTENT ===== */
+.main {
+  flex: 1;
+  padding: 28px 24px;
+  max-width: 960px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+/* ===== PAGE HEADER ===== */
+.page-header {
+  margin-bottom: 24px;
+}
+
+.page-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--text-primary);
+}
+
+.page-subtitle {
+  font-size: 14px;
+  color: var(--text-secondary);
+  margin-top: 2px;
+}
+
+/* ===== TAB CONTENT ===== */
+.tab-content { display: none; }
+.tab-content.active { display: block; }
+
+/* ===== CARD ===== */
+.card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 24px;
+  box-shadow: var(--shadow-sm);
+}
+
+.card + .card { margin-top: 16px; }
+
+.card-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* ===== FORM ===== */
+.form-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
 }
 
 .form-group {
-    margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
 }
 
-.form-group label {
-    display: block;
-    margin-bottom: 8px;
-    font-weight: 600;
-    color: #555;
+.form-group.full { grid-column: 1 / -1; }
+
+label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
 }
 
-.form-group select,
-.form-group input {
-    width: 100%;
-    padding: 12px;
-    border: 2px solid #e1e5e9;
-    border-radius: 8px;
-    font-size: 16px;
-    transition: border-color 0.3s ease;
+.form-control {
+  width: 100%;
+  padding: 10px 14px;
+  border: 1.5px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 15px;
+  color: var(--text-primary);
+  background: var(--surface);
+  transition: border-color 0.15s, box-shadow 0.15s;
+  appearance: none;
 }
 
-.form-group select:focus,
-.form-group input:focus {
-    outline: none;
-    border-color: #667eea;
+.form-control:focus {
+  outline: none;
+  border-color: var(--border-focus);
+  box-shadow: 0 0 0 3px rgba(59,130,246,0.12);
 }
 
-.file-input-wrapper {
-    position: relative;
-    display: inline-block;
-    width: 100%;
+.form-control::placeholder { color: var(--text-muted); }
+
+select.form-control {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%236B7280' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  padding-right: 36px;
 }
 
-.file-input {
-    width: 100%;
-    padding: 12px;
-    border: 2px dashed #e1e5e9;
-    border-radius: 8px;
-    text-align: center;
-    cursor: pointer;
-    transition: all 0.3s ease;
+/* Outros setor */
+#outrosDescricaoGroup, #editOutrosDescricaoGroup { display: none; }
+
+/* ===== BARCODE ROW ===== */
+.barcode-row {
+  display: flex;
+  gap: 8px;
 }
 
-.file-input:hover {
-    border-color: #667eea;
-    background-color: #f8f9ff;
-}
-
-.file-input input[type="file"] {
-    position: absolute;
-    opacity: 0;
-    width: 100%;
-    height: 100%;
-    cursor: pointer;
-}
-
-.btn {
-    width: 100%;
-    padding: 15px;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: transform 0.2s ease;
-}
-
-.btn:hover {
-    transform: translateY(-2px);
-}
-
-.btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-    transform: none;
-}
-
-.message-modal {
-    display: none;
-    position: fixed;
-    z-index: 2000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    overflow: auto;
-    background-color: rgba(0,0,0,0.4);
-    backdrop-filter: blur(5px);
-    -webkit-backdrop-filter: blur(5px);
-    justify-content: center;
-    align-items: center;
-}
-
-.message-modal-content {
-    background-color: #fefefe;
-    margin: auto;
-    padding: 30px;
-    border: 1px solid #888;
-    width: 80%;
-    max-width: 400px;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px 0 rgba(0,0,0,0.2), 0 6px 20px 0 rgba(0,0,0,0.19);
-    text-align: center;
-    position: relative;
-}
-
-.message-modal-content .close-btn {
-    color: #aaa;
-    position: absolute;
-    top: 10px;
-    right: 15px;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.message-modal-content .close-btn:hover {
-    color: black;
-}
-
-.message-modal-content .spinner {
-    border: 4px solid #f3f3f3;
-    border-top: 4px solid #667eea;
-    border-radius: 50%;
-    width: 40px;
-    height: 40px;
-    animation: spin 1s linear infinite;
-    margin: 0 auto 15px;
-}
-
-.message-modal-content .status-icon {
-    font-size: 48px;
-    margin-bottom: 15px;
-}
-
-.message-modal-content .status-icon.success {
-    color: #28a745;
-}
-
-.message-modal-content .status-icon.error {
-    color: #dc3545;
-}
-
-.compression-info {
-    font-size: 12px;
-    color: #666;
-    margin-top: 5px;
-    text-align: center;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
-.data-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 20px;
-    background: white;
-    border-radius: 8px;
-    overflow: hidden;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-}
-
-.data-table th,
-.data-table td {
-    padding: 12px 8px;
-    text-align: center;
-    border-bottom: 1px solid #e1e5e9;
-    word-wrap: break-word;
-}
-
-.data-table th {
-    background-color: #f8f9fa;
-    font-weight: 600;
-    color: #555;
-    position: sticky;
-    top: 0;
-}
-
-.data-table tr:hover {
-    background-color: #f8f9ff;
-}
-
-.data-table tr:last-child td {
-    border-bottom: none;
-}
-
-.table-container {
-    overflow-x: auto;
-    max-height: 600px;
-    overflow-y: auto;
-    border-radius: 8px;
-}
-
-.filters {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 15px;
-    margin-bottom: 20px;
-    padding: 20px;
-    background: #f8f9fa;
-    border-radius: 8px;
-}
-
-.checkbox-group {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-}
-
-.checkbox-group input[type="checkbox"] {
-    width: auto;
-}
-
-.actions {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
-    flex-wrap: wrap;
-}
-
-.btn-small {
-    padding: 6px 10px;
-    font-size: 12px;
-    border-radius: 4px;
-    border: none;
-    cursor: pointer;
-    font-weight: 500;
-}
+.barcode-row .form-control { flex: 1; }
 
 .btn-scan {
-    padding: 12px 20px;
-    background: #28a745;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 20px;
-    cursor: pointer;
-    transition: all 0.3s ease;
+  height: 44px;
+  width: 52px;
+  background: var(--green);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 20px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, transform 0.1s;
+  flex-shrink: 0;
 }
 
-.btn-scan:hover {
-    background: #218838;
-    transform: scale(1.05);
+.btn-scan:hover { background: #059669; transform: scale(1.04); }
+.btn-scan:active { transform: scale(0.97); }
+
+/* ===== FILE UPLOAD ===== */
+.file-zone {
+  border: 2px dashed var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  text-align: center;
+  cursor: pointer;
+  position: relative;
+  transition: border-color 0.15s, background 0.15s;
 }
 
-.btn-edit {
-    background-color: #ffc107;
-    color: #212529;
+.file-zone:hover {
+  border-color: var(--blue);
+  background: var(--blue-light);
 }
 
-.btn-delete {
-    background-color: #dc3545;
-    color: white;
+.file-zone input[type="file"] {
+  position: absolute;
+  inset: 0;
+  opacity: 0;
+  cursor: pointer;
+  width: 100%;
+  height: 100%;
 }
 
-.status-badge {
-    padding: 4px 8px;
-    border-radius: 4px;
-    font-size: 11px;
-    font-weight: bold;
-}
-
-.status-ok {
-    background-color: #d4edda;
-    color: #155724;
-}
-
-.status-pendente {
-    background-color: #fff3cd;
-    color: #856404;
-}
-
-.modal {
-    display: none;
-    position: fixed;
-    z-index: 1000;
-    left: 0;
-    top: 0;
-    width: 100%;
-    height: 100%;
-    background-color: rgba(0,0,0,0.5);
-    justify-content: center;
-    align-items: center;
-}
-
-.modal.show {
-    display: flex;
-}
-
-.modal-content {
-    background-color: white;
-    padding: 30px;
-    border-radius: 10px;
-    width: 90%;
-    max-width: 400px;
-    max-height: 90vh;
-    text-align: center;
-    overflow-y: auto;
-    position: relative;
-}
-
-.modal-content h3 {
-    margin-bottom: 20px;
-    color: #333;
-    font-size: 18px;
-}
-
-.modal-content input[type="password"] {
-    margin-bottom: 20px;
-}
-
-.close {
-    color: #aaa;
-    float: right;
-    font-size: 28px;
-    font-weight: bold;
-    cursor: pointer;
-}
-
-.close:hover {
-    color: black;
-}
+.file-zone-text { font-size: 14px; color: var(--text-secondary); }
+.file-zone-icon { font-size: 28px; margin-bottom: 6px; }
 
 .image-preview {
-    max-width: 100%;
-    max-height: 200px;
-    margin-top: 10px;
-    border-radius: 8px;
+  max-width: 100%;
+  max-height: 180px;
+  margin-top: 12px;
+  border-radius: var(--radius-sm);
+  object-fit: cover;
+  display: none;
 }
 
-.no-data {
-    text-align: center;
-    padding: 40px;
-    color: #666;
-    font-style: italic;
+/* ===== BUTTONS ===== */
+.btn {
+  padding: 11px 20px;
+  border: none;
+  border-radius: var(--radius-sm);
+  font-family: var(--font);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
 }
 
+.btn-primary {
+  background: var(--blue);
+  color: white;
+  width: 100%;
+  justify-content: center;
+  padding: 13px;
+  font-size: 15px;
+}
+
+.btn-primary:hover { background: var(--blue-dark); }
+.btn-primary:active { transform: scale(0.99); }
+.btn-primary:disabled { opacity: 0.55; cursor: not-allowed; }
+
+.btn-outline {
+  background: transparent;
+  border: 1.5px solid var(--border);
+  color: var(--text-secondary);
+}
+.btn-outline:hover { border-color: var(--blue); color: var(--blue); background: var(--blue-light); }
+
+.btn-ghost {
+  background: transparent;
+  color: var(--text-secondary);
+  padding: 7px 12px;
+  font-size: 13px;
+}
+.btn-ghost:hover { background: var(--bg); color: var(--text-primary); }
+
+/* ===== ACTION BUTTONS (table) ===== */
+.btn-action {
+  padding: 5px 10px;
+  font-size: 12px;
+  font-weight: 600;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: all 0.12s;
+}
+.btn-action-edit { background: var(--amber-light); color: #92400E; }
+.btn-action-edit:hover { background: #FDE68A; }
+.btn-action-del { background: var(--red-light); color: #991B1B; }
+.btn-action-del:hover { background: #FECACA; }
+.btn-action-baixar { background: var(--green-light); color: #065F46; }
+.btn-action-baixar:hover { background: #A7F3D0; }
+
+/* ===== FILTERS ===== */
+.filters-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr auto auto;
+  gap: 12px;
+  align-items: end;
+  margin-bottom: 16px;
+}
+
+.filters-checkboxes {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.check-label {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-secondary);
+  cursor: pointer;
+  user-select: none;
+}
+
+.check-label input[type="checkbox"] {
+  width: 15px;
+  height: 15px;
+  accent-color: var(--blue);
+  cursor: pointer;
+}
+
+/* ===== TABLE ===== */
+.table-wrapper {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  max-height: 60vh;
+  overflow-y: auto;
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13.5px;
+}
+
+thead {
+  position: sticky;
+  top: 0;
+  z-index: 2;
+}
+
+thead th {
+  background: var(--surface-alt);
+  padding: 11px 14px;
+  text-align: left;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-bottom: 1px solid var(--border);
+  white-space: nowrap;
+}
+
+tbody td {
+  padding: 12px 14px;
+  border-bottom: 1px solid var(--border);
+  color: var(--text-primary);
+  vertical-align: middle;
+}
+
+tbody tr:last-child td { border-bottom: none; }
+tbody tr:hover { background: var(--blue-light); }
+
+.td-mono {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  color: var(--text-secondary);
+}
+
+.td-desc {
+  max-width: 160px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.td-desc.nao-cadastrado {
+  color: var(--text-muted);
+  font-style: italic;
+  font-size: 12px;
+}
+
+td .actions { display: flex; gap: 4px; flex-wrap: wrap; }
+
+/* ===== STATUS BADGES ===== */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 3px 9px;
+  border-radius: 20px;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
+}
+
+.badge-ok {
+  background: var(--green-light);
+  color: #065F46;
+}
+
+.badge-pendente {
+  background: var(--amber-light);
+  color: #92400E;
+}
+
+.badge-ok::before { content: '●'; font-size: 8px; color: var(--green); }
+.badge-pendente::before { content: '●'; font-size: 8px; color: var(--amber); }
+
+/* ===== NO DATA ===== */
+.empty-state {
+  text-align: center;
+  padding: 60px 20px;
+  color: var(--text-muted);
+}
+
+.empty-state-icon { font-size: 40px; margin-bottom: 12px; }
+.empty-state-text { font-size: 14px; }
+
+/* ===== MODALS ===== */
+.modal-overlay {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  backdrop-filter: blur(4px);
+  z-index: 1000;
+  align-items: center;
+  justify-content: center;
+}
+
+.modal-overlay.show { display: flex; }
+
+.modal-box {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 28px;
+  width: 92%;
+  max-width: 440px;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+  animation: modal-in 0.2s ease;
+}
+
+@keyframes modal-in {
+  from { opacity: 0; transform: translateY(12px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.modal-title {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.modal-close {
+  width: 30px;
+  height: 30px;
+  background: var(--bg);
+  border: none;
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--text-secondary);
+  transition: background 0.15s;
+}
+
+.modal-close:hover { background: var(--border); }
+
+/* ===== MESSAGE MODAL ===== */
+#messageModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.4);
+  backdrop-filter: blur(4px);
+  z-index: 2000;
+  align-items: center;
+  justify-content: center;
+}
+
+.msg-box {
+  background: var(--surface);
+  border-radius: var(--radius-lg);
+  padding: 32px 28px;
+  text-align: center;
+  max-width: 320px;
+  width: 90%;
+  box-shadow: var(--shadow-lg);
+  position: relative;
+}
+
+.msg-close {
+  position: absolute;
+  top: 12px;
+  right: 12px;
+  width: 28px;
+  height: 28px;
+  background: var(--bg);
+  border: none;
+  border-radius: 6px;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  width: 38px;
+  height: 38px;
+  border: 3px solid var(--border);
+  border-top-color: var(--blue);
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+  margin: 0 auto 14px;
+}
+
+@keyframes spin { to { transform: rotate(360deg); } }
+
+.msg-icon { font-size: 42px; margin-bottom: 12px; }
+.msg-text { font-size: 15px; color: var(--text-primary); font-weight: 500; }
+
+/* ===== SCANNER MODAL ===== */
+#scannerModal {
+  display: none;
+  position: fixed;
+  inset: 0;
+  background: #000;
+  z-index: 9999;
+  overflow: auto;
+}
+
+#scannerVideo {
+  width: 100%;
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.scanner-close-btn {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  z-index: 10000;
+  font-size: 14px;
+  font-weight: 600;
+  padding: 10px 18px;
+  background: var(--red);
+  color: white;
+  border: none;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+
+/* ===== MOBILE ===== */
 @media (max-width: 768px) {
-    .container {
-        padding: 10px;
-    }
-    
-    .header h1 {
-        font-size: 20px;
-    }
-    
-    .tab {
-        padding: 12px 8px;
-        font-size: 14px;
-    }
-    
-    .data-table {
-        font-size: 12px;
-    }
-    
-    .data-table th,
-    .data-table td {
-        padding: 6px 4px;
-    }
-    
-    .filters {
-        grid-template-columns: 1fr;
-    }
-    
-    .actions {
-        flex-direction: column;
-    }
-    
-    .btn-small {
-        width: 100%;
-        margin-bottom: 2px;
-    }
+  /* Ocultar aba Visualizar no mobile */
+  .tab-btn[data-tab="visualizar"] { display: none; }
+  #visualizar { display: none !important; }
 
-    .modal-content {
-        width: 95%;
-        max-height: 85vh;
-        padding: 20px;
-    }
+  .topnav { padding: 0 16px; }
+  .main { padding: 16px; }
+
+  .form-grid { grid-template-columns: 1fr; }
+  .form-group.full { grid-column: 1; }
+
+  .filters-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .page-title { font-size: 19px; }
+
+  /* Scanner bem visível no mobile */
+  .btn-scan {
+    width: 60px;
+    height: 52px;
+    font-size: 24px;
+    border-radius: var(--radius);
+  }
+
+  .tab-nav { gap: 2px; }
+  .tab-btn { padding: 6px 14px; font-size: 13px; }
+
+  .btn-primary { font-size: 16px; padding: 15px; }
+}
+
+/* ===== DESKTOP REFINEMENTS ===== */
+@media (min-width: 769px) {
+  .main { padding: 32px 28px; }
+}
+
+/* ===== SUMMARY ROW ===== */
+.summary-bar {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+  flex-wrap: wrap;
+}
+
+.summary-pill {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 6px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.summary-pill span { color: var(--text-primary); }
+
+/* ===== PHOTO LINK ===== */
+a.photo-link {
+  color: var(--blue);
+  text-decoration: none;
+  font-size: 18px;
+  transition: transform 0.1s;
+  display: inline-block;
+}
+a.photo-link:hover { transform: scale(1.2); }
+
+/* ===== REFRESH BTN ===== */
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 14px;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+/* ===== FORM SECTION TITLE ===== */
+.form-section {
+  margin-bottom: 8px;
+  padding-bottom: 10px;
+  border-bottom: 1px solid var(--border);
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 0.6px;
 }
 </style>
 </head>
 <body>
-<div class="container">
-<div class="header">
-<h1>Transferências de Produtos</h1>
-<p>Gerenciamento de produtos sem estoque</p>
+<div class="app-shell">
+
+  <!-- TOP NAV -->
+  <nav class="topnav">
+    <div class="topnav-brand">
+      <div class="brand-icon">📦</div>
+      <div>
+        <div class="brand-name">TransfControl</div>
+        <div class="brand-tag">Gerenciamento de Produtos</div>
+      </div>
+    </div>
+    <div class="tab-nav">
+      <button class="tab-btn active" data-tab="cadastro" onclick="showTab('cadastro')">Cadastrar</button>
+      <button class="tab-btn" data-tab="visualizar" onclick="showTab('visualizar')">Visualizar</button>
+    </div>
+  </nav>
+
+  <!-- MAIN -->
+  <main class="main">
+
+    <!-- TAB CADASTRO -->
+    <div class="tab-content active" id="cadastro">
+      <div class="page-header">
+        <h1 class="page-title">Nova Transferência</h1>
+        <p class="page-subtitle">Registre a transferência de um produto sem estoque</p>
+      </div>
+
+      <div class="card">
+        <form id="transferForm">
+          <div class="form-section">Informações da Transferência</div>
+          <div class="form-grid">
+            <div class="form-group">
+              <label for="fiscal">Nome do Fiscal *</label>
+              <input class="form-control" id="fiscal" name="fiscal" placeholder="Ex: João Silva" required type="text"/>
+            </div>
+
+            <div class="form-group">
+              <label for="setor">Setor de Destino *</label>
+              <select class="form-control" id="setor" name="setor" required onchange="toggleOutros('setor', 'outrosDescricaoGroup')">
+                <option value="">Selecione o setor</option>
+                <optgroup label="Consumo">
+                  <option value="Consumo Limpeza">Consumo Limpeza</option>
+                  <option value="Consumo Padaria">Consumo Padaria</option>
+                  <option value="Consumo Refeitório">Consumo Refeitório</option>
+                  <option value="Consumo Rotisserie">Consumo Rotisserie</option>
+                  <option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
+                </optgroup>
+                <optgroup label="Eventos">
+                  <option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
+                </optgroup>
+                <optgroup label="Matéria-Prima">
+                  <option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
+                  <option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
+                  <option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
+                  <option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
+                </optgroup>
+                <optgroup label="Perdas">
+                  <option value="Perda por Furto">Perda por Furto</option>
+                  <option value="Perda Produção">Perda Produção</option>
+                  <option value="Perda Avaria">Perda Avaria</option>
+                  <option value="Perda Vencimento">Perda Vencimento</option>
+                </optgroup>
+                <option value="Outros">Outros</option>
+              </select>
+            </div>
+
+            <div class="form-group full" id="outrosDescricaoGroup">
+              <label for="outrosDescricao">Descrição do Setor *</label>
+              <input class="form-control" id="outrosDescricao" name="outrosDescricao" placeholder="Descreva o destino" type="text"/>
+            </div>
+
+            <div class="form-group full">
+              <label for="codigoBarras">Código de Barras *</label>
+              <div class="barcode-row">
+                <input class="form-control" id="codigoBarras" inputmode="numeric" name="codigoBarras" placeholder="Digite ou escaneie" pattern="[0-9]*" required type="text"/>
+                <button type="button" class="btn-scan" onclick="iniciarScanner()" title="Escanear código de barras">📷</button>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="quantidade">Quantidade *</label>
+              <input class="form-control" id="quantidade" inputmode="decimal" name="quantidade" placeholder="0,000" required type="text"/>
+            </div>
+
+            <div class="form-group">
+              <label>Foto do Código de Barras *</label>
+              <div class="file-zone" id="fileZone">
+                <input accept="image/*" id="foto" name="foto" required type="file" capture="environment"/>
+                <div class="file-zone-icon">📷</div>
+                <div class="file-zone-text">Tirar foto ou escolher da galeria</div>
+              </div>
+              <img class="image-preview" id="imagePreview"/>
+            </div>
+          </div>
+
+          <div style="margin-top: 20px;">
+            <button class="btn btn-primary" id="submitBtn" type="submit">
+              <span>Enviar Transferência</span>
+            </button>
+          </div>
+        </form>
+      </div>
+    </div>
+
+    <!-- TAB VISUALIZAR -->
+    <div class="tab-content" id="visualizar">
+      <div class="page-header">
+        <h1 class="page-title">Transferências</h1>
+        <p class="page-subtitle">Histórico e gerenciamento de registros</p>
+      </div>
+
+      <!-- Filtros -->
+      <div class="card" style="margin-bottom: 16px;">
+        <div class="card-title">🔍 Filtros</div>
+        <div class="filters-grid">
+          <div class="form-group">
+            <label for="filtroFiscal">Fiscal</label>
+            <input class="form-control" id="filtroFiscal" placeholder="Nome do fiscal" type="text"/>
+          </div>
+          <div class="form-group">
+            <label for="filtroSetor">Setor</label>
+            <select class="form-control" id="filtroSetor">
+              <option value="">Todos</option>
+              <optgroup label="Consumo">
+                <option value="Consumo Limpeza">Consumo Limpeza</option>
+                <option value="Consumo Padaria">Consumo Padaria</option>
+                <option value="Consumo Refeitório">Consumo Refeitório</option>
+                <option value="Consumo Rotisserie">Consumo Rotisserie</option>
+                <option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
+              </optgroup>
+              <optgroup label="Eventos">
+                <option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
+              </optgroup>
+              <optgroup label="Matéria-Prima">
+                <option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
+                <option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
+                <option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
+                <option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
+              </optgroup>
+              <optgroup label="Perdas">
+                <option value="Perda por Furto">Perda por Furto</option>
+                <option value="Perda Produção">Perda Produção</option>
+                <option value="Perda Avaria">Perda Avaria</option>
+                <option value="Perda Vencimento">Perda Vencimento</option>
+              </optgroup>
+              <option value="Outros">Outros</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="filtroCodigo">Código</label>
+            <input class="form-control" id="filtroCodigo" placeholder="Código de barras" type="text"/>
+          </div>
+          <div class="form-group" style="justify-content: flex-end;">
+            <label>&nbsp;</label>
+            <div class="filters-checkboxes">
+              <label class="check-label">
+                <input id="filtroBaixaOk" type="checkbox"/> Baixados
+              </label>
+              <label class="check-label">
+                <input id="filtroPendente" type="checkbox"/> Pendentes
+              </label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="summary-bar" id="summaryBar"></div>
+
+      <!-- Toolbar -->
+      <div class="toolbar">
+        <div style="font-size: 13px; color: var(--text-muted);" id="countLabel"></div>
+        <button class="btn btn-outline" onclick="carregarDados()">🔄 Atualizar</button>
+      </div>
+
+      <!-- Table -->
+      <div class="table-wrapper">
+        <table>
+          <thead>
+            <tr>
+              <th>Fiscal</th>
+              <th>Setor</th>
+              <th>Código</th>
+              <th>Descrição</th>
+              <th>Qtd</th>
+              <th>Foto</th>
+              <th>Status</th>
+              <th>Data/Hora</th>
+              <th>Ações</th>
+            </tr>
+          </thead>
+          <tbody id="dataTableBody">
+            <tr>
+              <td colspan="9">
+                <div class="empty-state">
+                  <div class="empty-state-icon">📋</div>
+                  <div class="empty-state-text">Clique em "Atualizar" para carregar os dados</div>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
 </div>
 
-<div class="tabs">
-<button class="tab active" onclick="showTab('cadastro')">Cadastrar</button>
-<button class="tab" onclick="showTab('visualizar')">Visualizar</button>
+<!-- Modal Senha -->
+<div class="modal-overlay" id="passwordModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">🔒 Autenticação necessária</span>
+      <button class="modal-close" onclick="closePasswordModal()">✕</button>
+    </div>
+    <div class="form-group" style="margin-bottom: 16px;">
+      <label for="passwordInput">Senha de administrador</label>
+      <input class="form-control" id="passwordInput" placeholder="Digite a senha" type="password"/>
+    </div>
+    <button class="btn btn-primary" onclick="validatePassword()">Confirmar</button>
+  </div>
 </div>
 
-<!-- Tab Cadastro -->
-<div class="tab-content active" id="cadastro">
-<form id="transferForm">
-<div class="form-group">
-<label for="fiscal">Nome do Fiscal *</label>
-<input id="fiscal" name="fiscal" placeholder="Digite o nome do fiscal" required="" type="text"/>
+<!-- Modal Edição -->
+<div class="modal-overlay" id="editModal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <span class="modal-title">✏️ Editar Item</span>
+      <button class="modal-close" onclick="closeEditModal()">✕</button>
+    </div>
+    <form id="editForm">
+      <div class="form-grid">
+        <div class="form-group">
+          <label for="editFiscal">Nome do Fiscal *</label>
+          <input class="form-control" id="editFiscal" name="editFiscal" placeholder="Nome do fiscal" required type="text"/>
+        </div>
+        <div class="form-group">
+          <label for="editSetor">Setor de Destino *</label>
+          <select class="form-control" id="editSetor" name="editSetor" required onchange="toggleOutros('editSetor', 'editOutrosDescricaoGroup')">
+            <option value="">Selecione o setor</option>
+            <optgroup label="Consumo">
+              <option value="Consumo Limpeza">Consumo Limpeza</option>
+              <option value="Consumo Padaria">Consumo Padaria</option>
+              <option value="Consumo Refeitório">Consumo Refeitório</option>
+              <option value="Consumo Rotisserie">Consumo Rotisserie</option>
+              <option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
+            </optgroup>
+            <optgroup label="Eventos">
+              <option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
+            </optgroup>
+            <optgroup label="Matéria-Prima">
+              <option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
+              <option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
+              <option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
+              <option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
+            </optgroup>
+            <optgroup label="Perdas">
+              <option value="Perda por Furto">Perda por Furto</option>
+              <option value="Perda Produção">Perda Produção</option>
+              <option value="Perda Avaria">Perda Avaria</option>
+              <option value="Perda Vencimento">Perda Vencimento</option>
+            </optgroup>
+            <option value="Outros">Outros</option>
+          </select>
+        </div>
+        <div class="form-group full" id="editOutrosDescricaoGroup">
+          <label for="editOutrosDescricao">Descrição do Setor *</label>
+          <input class="form-control" id="editOutrosDescricao" name="editOutrosDescricao" placeholder="Descreva o destino" type="text"/>
+        </div>
+        <div class="form-group">
+          <label for="editCodigoBarras">Código de Barras *</label>
+          <input class="form-control" id="editCodigoBarras" inputmode="numeric" name="editCodigoBarras" pattern="[0-9]*" required type="text"/>
+        </div>
+        <div class="form-group">
+          <label for="editQuantidade">Quantidade *</label>
+          <input class="form-control" id="editQuantidade" inputmode="decimal" name="editQuantidade" placeholder="0,000" required type="text"/>
+        </div>
+      </div>
+      <div style="margin-top: 20px;">
+        <button class="btn btn-primary" type="submit">Salvar Alterações</button>
+      </div>
+    </form>
+  </div>
 </div>
 
-<div class="form-group">
-<label for="setor">Setor de Destino *</label>
-<select id="setor" name="setor" required="">
-<option value="">Selecione o setor</option>
-<option value="Consumo Limpeza">Consumo Limpeza</option>
-<option value="Consumo Padaria">Consumo Padaria</option>
-<option value="Consumo Refeitório">Consumo Refeitório</option>
-<option value="Consumo Rotisserie">Consumo Rotisserie</option>
-<option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
-<option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
-<option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
-<option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
-<option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
-<option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
-</select>
+<!-- Modal Mensagens -->
+<div id="messageModal">
+  <div class="msg-box">
+    <button class="msg-close" onclick="closeMessageModal()">✕</button>
+    <div class="spinner" id="modalSpinner" style="display:none;"></div>
+    <div class="msg-icon" id="modalStatusIcon" style="display:none;"></div>
+    <p class="msg-text" id="modalMessageText"></p>
+  </div>
 </div>
 
-<div class="form-group">
-<label for="codigoBarras">Código de Barras *</label>
-<div style="display: flex; gap: 10px;">
-<input id="codigoBarras" inputmode="numeric" name="codigoBarras" pattern="[0-9]*" required="" style="flex: 1;" type="text"/>
-<button type="button" class="btn-scan" onclick="iniciarScanner()" title="Escanear código de barras">📷</button>
-</div>
+<!-- Scanner Modal -->
+<div id="scannerModal">
+  <div id="scannerVideo"></div>
+  <button class="scanner-close-btn" onclick="fecharScanner()">✖ Fechar Scanner</button>
 </div>
 
-<div class="form-group">
-<label for="quantidade">Quantidade *</label>
-<input id="quantidade" inputmode="decimal" name="quantidade" placeholder="0,000" required="" type="text"/>
-</div>
-
-<div class="form-group">
-<label for="foto">Foto do Código de Barras *</label>
-<div class="file-input-wrapper">
-<div class="file-input">
-<input accept="image/*" id="foto" name="foto" required="" type="file"/>
-<span id="fileLabel">📷 Tirar foto ou escolher da galeria</span>
-</div>
-</div>
-<img class="image-preview" id="imagePreview" style="display: none;"/>
-<div class="compression-info" id="compressionInfo" style="display: none;"></div>
-</div>
-
-<button class="btn" id="submitBtn" type="submit">Enviar Transferência</button>
-</form>
-</div>
-
-<!-- Tab Visualizar -->
-<div class="tab-content" id="visualizar">
-<div class="filters">
-<div class="form-group">
-<label for="filtroFiscal">Filtrar por Fiscal</label>
-<input id="filtroFiscal" placeholder="Digite o nome do fiscal" type="text"/>
-</div>
-
-<div class="form-group">
-<label for="filtroSetor">Filtrar por Setor</label>
-<select id="filtroSetor">
-<option value="">Todos os setores</option>
-<option value="Consumo Limpeza">Consumo Limpeza</option>
-<option value="Consumo Padaria">Consumo Padaria</option>
-<option value="Consumo Refeitório">Consumo Refeitório</option>
-<option value="Consumo Rotisserie">Consumo Rotisserie</option>
-<option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
-<option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
-<option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
-<option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
-<option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
-<option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
-</select>
-</div>
-
-<div class="form-group">
-<label for="filtroCodigo">Filtrar por Código</label>
-<input id="filtroCodigo" placeholder="Digite o código" type="text"/>
-</div>
-
-<div class="checkbox-group">
-<input id="filtroBaixaOk" type="checkbox"/>
-<label for="filtroBaixaOk">Baixados</label>
-</div>
-
-<div class="checkbox-group">
-<input id="filtroPendente" type="checkbox"/>
-<label for="filtroPendente">Pendentes</label>
-</div>
-</div>
-
-<button class="btn" onclick="carregarDados()">🔄 Atualizar Dados</button>
-
-<div id="dadosContainer">
-<div class="table-container">
-<table class="data-table" id="dataTable">
-<thead>
-<tr>
-<th style="width: 12%;">Fiscal</th>
-<th style="width: 18%;">Setor</th>
-<th style="width: 12%;">Código</th>
-<th style="width: 8%;">Qtd</th>
-<th style="width: 8%;">Foto</th>
-<th style="width: 10%;">Baixa</th>
-<th style="width: 12%;">Data/Hora</th>
-<th style="width: 20%;">Ações</th>
-</tr>
-</thead>
-<tbody id="dataTableBody">
-<tr>
-<td class="no-data" colspan="8">Carregue os dados clicando no botão "Atualizar Dados"</td>
-</tr>
-</tbody>
-</table>
-</div>
-</div>
-</div>
-</div>
-
-<!-- Modal para senha -->
-<div class="modal" id="passwordModal">
-<div class="modal-content">
-<span class="close" onclick="closePasswordModal()">×</span>
-<h3>Digite a senha</h3>
-<input id="passwordInput" placeholder="Senha" type="password"/>
-<button class="btn" onclick="validatePassword()">Confirmar</button>
-</div>
-</div>
-
-<!-- Modal para edição -->
-<div class="modal" id="editModal">
-<div class="modal-content">
-<span class="close" onclick="closeEditModal()">×</span>
-<h3>Editar Item</h3>
-<form id="editForm">
-<div class="form-group">
-<label for="editFiscal">Nome do Fiscal *</label>
-<input id="editFiscal" name="editFiscal" placeholder="Digite o nome do fiscal" required="" type="text"/>
-</div>
-
-<div class="form-group">
-<label for="editSetor">Setor de Destino *</label>
-<select id="editSetor" name="editSetor" required="">
-<option value="">Selecione o setor</option>
-<option value="Consumo Limpeza">Consumo Limpeza</option>
-<option value="Consumo Padaria">Consumo Padaria</option>
-<option value="Consumo Refeitório">Consumo Refeitório</option>
-<option value="Consumo Rotisserie">Consumo Rotisserie</option>
-<option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
-<option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
-<option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
-<option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
-<option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
-<option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
-</select>
-</div>
-
-<div class="form-group">
-<label for="editCodigoBarras">Código de Barras *</label>
-<input id="editCodigoBarras" inputmode="numeric" name="editCodigoBarras" pattern="[0-9]*" required="" type="text"/>
-</div>
-
-<div class="form-group">
-<label for="editQuantidade">Quantidade *</label>
-<input id="editQuantidade" inputmode="decimal" name="editQuantidade" placeholder="0,000" required="" type="text"/>
-</div>
-
-<button class="btn" type="submit">Salvar Edição</button>
-</form>
-</div>
-</div>
-
-<!-- Modal de Mensagens -->
-<div class="message-modal" id="messageModal">
-<div class="message-modal-content">
-<span class="close-btn" onclick="closeMessageModal()">×</span>
-<div class="spinner" id="modalSpinner" style="display: none;"></div>
-<div class="status-icon" id="modalStatusIcon" style="display: none;"></div>
-<p id="modalMessageText"></p>
-</div>
-</div>
-
-<!-- Modal Scanner -->
-<div id="scannerModal" style="
-  display:none;
-  position:fixed;
-  inset:0;
-  background:#000;
-  z-index:9999;
-  overflow:auto;
-">
-  <div id="scannerVideo" style="
-    width:100%;
-    min-height:100vh;
-    display:flex;
-    align-items:center;
-    justify-content:center;
-  "></div>
-
-  <button onclick="fecharScanner()" style="
-    position:fixed;
-    top:20px;
-    right:20px;
-    z-index:10000;
-    font-size:18px;
-    padding:10px 15px;
-    background: #dc3545;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-  ">
-    ✖ Fechar
-  </button>
-</div>
-
-<!-- Configuração e App -->
+<!-- Scripts -->
 <script src="https://unpkg.com/@supabase/supabase-js@2"></script>
 <script src="https://unpkg.com/html5-qrcode@2.3.8/html5-qrcode.min.js"></script>
-
 <script src="./supabase-config.js"></script>
 <script src="./app.js"></script>
 <script src="./barcode_scanner.js"></script>
-    
+
+<script>
+// Toggle "Outros" field
+window.toggleOutros = function(selectId, groupId) {
+  const sel = document.getElementById(selectId);
+  const grp = document.getElementById(groupId);
+  const inp = grp.querySelector('input');
+  if (sel.value === 'Outros') {
+    grp.style.display = 'flex';
+    inp.required = true;
+  } else {
+    grp.style.display = 'none';
+    inp.required = false;
+    inp.value = '';
+  }
+}
+</script>
+
 </body>
 </html>
