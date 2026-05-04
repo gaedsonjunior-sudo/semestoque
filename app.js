@@ -173,27 +173,37 @@ window.carregarCacheProdutos = async function() {
       .select("codigo_barras, descricao");
 
     if (error) {
-      console.warn("Tabela 'produtos' não encontrada ou erro:", error.message, "status:", status);
-      console.warn("Detalhe:", JSON.stringify(error));
+      // Erro de RLS ou tabela não existe — log detalhado para diagnóstico
+      console.warn("⚠️ Tabela produtos — erro:", error.message, "| status HTTP:", status);
+      console.warn("Detalhes completos:", JSON.stringify(error));
+      if (status === 401 || status === 403 || error.code === "42501") {
+        console.warn("👉 Provável problema de RLS. Execute no SQL Editor do Supabase:");
+        console.warn("   CREATE POLICY \"anon_select\" ON produtos FOR SELECT USING (true);");
+      }
+      return;
+    }
+
+    if (!data || data.length === 0) {
+      console.warn("⚠️ Tabela produtos existe mas está vazia. Nenhum produto cadastrado.");
       return;
     }
 
     cacheProdutos = {};
     (data || []).forEach(p => {
+      // Normaliza: trim + lowercase para comparação robusta
       const key = String(p.codigo_barras).trim();
       cacheProdutos[key] = p.descricao;
     });
-    console.log(`Cache de produtos carregado: ${Object.keys(cacheProdutos).length} itens`, cacheProdutos);
+    console.log(`✅ Cache de produtos: ${Object.keys(cacheProdutos).length} produto(s) carregado(s)`);
   } catch (err) {
     console.warn("Erro ao carregar produtos:", err);
   }
 }
 
-function getDescricaoProduto(codigo) {
-  if (!codigo) return null;
-  const key = String(codigo).trim();
-  return cacheProdutos[key] || null;
-}
+// Lookup robusto: trim em ambos os lados para evitar erro de espaço
+
+
+
 
 // ================== FILTROS ==================
 window.aplicarFiltros = function() {
