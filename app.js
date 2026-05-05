@@ -167,32 +167,42 @@ window.marcarComoBaixado = async function(id) {
 
 // ================== PRODUTOS (LOOKUP) ==================
 window.carregarCacheProdutos = async function() {
+  // Nunca lança exceção — garante que carregarDados() sempre continue
   try {
-    const { data, error, status } = await supabase
-      .from("produtos")
-      .select("codigo_barras, descricao");
+    const resultado = await Promise.race([
+      supabase.from("produtos").select("codigo_barras, descricao"),
+      new Promise(resolve => setTimeout(() => resolve({ data: null, error: { message: "timeout" } }), 5000))
+    ]);
+
+    const { data, error } = resultado;
 
     if (error) {
-      console.warn("Tabela 'produtos' não encontrada ou erro:", error.message, "status:", status);
-      console.warn("Detalhe:", JSON.stringify(error));
+      console.warn("⚠️ Produtos:", error.message);
+      console.warn("👉 Se for 'permission denied', execute no SQL Editor do Supabase:");
+      console.warn("   DROP POLICY IF EXISTS \"Leitura pública\" ON produtos;");
+      console.warn("   CREATE POLICY \"anon_select\" ON produtos FOR SELECT TO anon USING (true);");
+      return; // continua sem cache — não trava
+    }
+
+    if (!data || data.length === 0) {
+      console.warn("⚠️ Tabela produtos vazia.");
       return;
     }
 
     cacheProdutos = {};
-    (data || []).forEach(p => {
-      const key = String(p.codigo_barras).trim();
-      cacheProdutos[key] = p.descricao;
+    data.forEach(p => {
+      cacheProdutos[String(p.codigo_barras).trim()] = p.descricao;
     });
-    console.log(`Cache de produtos carregado: ${Object.keys(cacheProdutos).length} itens`, cacheProdutos);
+    console.log(`✅ Produtos carregados: ${Object.keys(cacheProdutos).length} item(ns)`);
   } catch (err) {
-    console.warn("Erro ao carregar produtos:", err);
+    console.warn("⚠️ Erro ao carregar produtos (ignorado):", err.message);
+    // Nunca relança — carregarDados() sempre continua
   }
 }
 
 function getDescricaoProduto(codigo) {
   if (!codigo) return null;
-  const key = String(codigo).trim();
-  return cacheProdutos[key] || null;
+  return cacheProdutos[String(codigo).trim()] || null;
 }
 
 // ================== FILTROS ==================
