@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8"/>
 <meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0" name="viewport"/>
-<title>Transferências · Sistema de Controle</title>
+<title>Sistema de Controle de Lançamentos</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -787,7 +787,7 @@ a.photo-link:hover { transform: scale(1.2); }
     <div class="topnav-brand">
       <div class="brand-icon">📦</div>
       <div>
-        <div class="brand-name">TransfControl</div>
+        <div class="brand-name">ProdControl</div>
         <div class="brand-tag">Gerenciamento de Produtos</div>
       </div>
     </div>
@@ -803,13 +803,13 @@ a.photo-link:hover { transform: scale(1.2); }
     <!-- TAB CADASTRO -->
     <div class="tab-content active" id="cadastro">
       <div class="page-header">
-        <h1 class="page-title">Nova Transferência</h1>
-        <p class="page-subtitle">Registre a transferência de um produto sem estoque</p>
+        <h1 class="page-title">Novo Produto</h1>
+        <p class="page-subtitle">Registre um produto sem estoque ou com erro para lançamento</p>
       </div>
 
       <div class="card">
         <form id="transferForm">
-          <div class="form-section">Informações da Transferência</div>
+          <div class="form-section">Informações do Lançamento</div>
           <div class="form-grid">
             <div class="form-group">
               <label for="fiscal">Nome do Fiscal *</label>
@@ -817,7 +817,7 @@ a.photo-link:hover { transform: scale(1.2); }
             </div>
 
             <div class="form-group">
-              <label for="setor">Setor de Destino *</label>
+              <label for="setor">Lançamento *</label>
               <select class="form-control" id="setor" name="setor" required onchange="toggleOutros('setor', 'outrosDescricaoGroup')">
                 <option value="">Selecione o setor</option>
                 <optgroup label="Consumo">
@@ -879,7 +879,7 @@ a.photo-link:hover { transform: scale(1.2); }
 
           <div style="margin-top: 20px;">
             <button class="btn btn-primary" id="submitBtn" type="submit">
-              <span>Enviar Transferência</span>
+              <span>Enviar Lançamento</span>
             </button>
           </div>
         </form>
