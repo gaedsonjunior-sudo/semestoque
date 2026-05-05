@@ -167,24 +167,33 @@ window.marcarComoBaixado = async function(id) {
 
 // ================== PRODUTOS (LOOKUP) ==================
 window.carregarCacheProdutos = async function() {
+  // Busca paginada — Supabase limita 1000 por request
   try {
-    const { data, error, status } = await supabase
-      .from("produtos")
-      .select("codigo_barras, descricao");
+    window.cacheProdutos = {};
+    let from = 0;
+    const pageSize = 1000;
 
-    if (error) {
-      console.warn("Tabela 'produtos' não encontrada ou erro:", error.message, "status:", status);
-      console.warn("Detalhe:", JSON.stringify(error));
-      return;
+    while (true) {
+      const { data, error } = await supabase
+        .from("produtos")
+        .select("codigo_barras, descricao")
+        .range(from, from + pageSize - 1);
+
+      if (error) { console.warn("⚠️ Produtos erro:", error.message); break; }
+      if (!data || data.length === 0) break;
+
+      data.forEach(p => {
+        window.cacheProdutos[String(p.codigo_barras).trim()] = p.descricao;
+      });
+
+      console.log(`  página ${from/pageSize + 1}: ${data.length} produtos`);
+      if (data.length < pageSize) break;
+      from += pageSize;
     }
 
-    window.cacheProdutos = {};
-    (data || []).forEach(p => {
-      window.cacheProdutos[String(p.codigo_barras).trim()] = p.descricao;
-    });
-    console.log("✅ Produtos no cache:", Object.keys(window.cacheProdutos).length);
+    console.log("✅ Total no cache:", Object.keys(window.cacheProdutos).length);
   } catch (err) {
-    console.warn("Erro ao carregar produtos:", err);
+    console.warn("⚠️ Erro produtos:", err.message);
   }
 }
 
