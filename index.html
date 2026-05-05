@@ -418,7 +418,7 @@ select.form-control {
   overflow-x: auto;
   border: 1px solid var(--border);
   border-radius: var(--radius);
-  max-height: calc(100vh - 220px);
+  max-height: calc(100vh - 195px);
   overflow-y: auto;
 }
 
@@ -888,75 +888,54 @@ a.photo-link:hover { transform: scale(1.2); }
 
     <!-- TAB VISUALIZAR -->
     <div class="tab-content" id="visualizar">
-      <div class="page-header">
-        <h1 class="page-title">Transferências</h1>
-        <p class="page-subtitle">Histórico e gerenciamento de registros</p>
+
+      <!-- Filtros compactos numa linha -->
+      <div style="background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px;flex-wrap:wrap;">
+        <input class="form-control" id="filtroFiscal" placeholder="🔍 Fiscal" type="text" style="flex:1;min-width:120px;padding:7px 10px;font-size:13px;"/>
+        <select class="form-control" id="filtroSetor" style="flex:1.6;min-width:150px;padding:7px 10px;font-size:13px;">
+          <option value="">Todos os setores</option>
+          <optgroup label="Consumo">
+            <option value="Consumo Limpeza">Consumo Limpeza</option>
+            <option value="Consumo Padaria">Consumo Padaria</option>
+            <option value="Consumo Refeitório">Consumo Refeitório</option>
+            <option value="Consumo Rotisserie">Consumo Rotisserie</option>
+            <option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
+          </optgroup>
+          <optgroup label="Eventos">
+            <option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
+          </optgroup>
+          <optgroup label="Matéria-Prima">
+            <option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
+            <option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
+            <option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
+            <option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
+          </optgroup>
+          <optgroup label="Perdas">
+            <option value="Perda Furto">Perda Furto</option>
+            <option value="Perda Produção">Perda Produção</option>
+            <option value="Perda Avaria">Perda Avaria</option>
+            <option value="Perda Vencimento">Perda Vencimento</option>
+            <option value="Perda Quebra Equipamento">Perda Quebra Equipamento</option>
+            <option value="Perda Qualidade FLV">Perda Qualidade FLV</option>
+          </optgroup>
+          <option value="Outros">Outros</option>
+        </select>
+        <input class="form-control" id="filtroCodigo" placeholder="🔍 Código de barras" type="text" style="flex:1;min-width:120px;padding:7px 10px;font-size:13px;"/>
+        <label class="check-label" style="font-size:13px;white-space:nowrap;cursor:pointer;">
+          <input id="filtroBaixaOk" type="checkbox"/> Baixados
+        </label>
+        <label class="check-label" style="font-size:13px;white-space:nowrap;cursor:pointer;">
+          <input id="filtroPendente" type="checkbox"/> Pendentes
+        </label>
       </div>
 
-      <!-- Filtros -->
-      <div class="card" style="margin-bottom: 16px;">
-        <div class="card-title">🔍 Filtros</div>
-        <div class="filters-grid">
-          <div class="form-group">
-            <label for="filtroFiscal">Fiscal</label>
-            <input class="form-control" id="filtroFiscal" placeholder="Nome do fiscal" type="text"/>
-          </div>
-          <div class="form-group">
-            <label for="filtroSetor">Setor</label>
-            <select class="form-control" id="filtroSetor">
-              <option value="">Todos</option>
-              <optgroup label="Consumo">
-                <option value="Consumo Limpeza">Consumo Limpeza</option>
-                <option value="Consumo Padaria">Consumo Padaria</option>
-                <option value="Consumo Refeitório">Consumo Refeitório</option>
-                <option value="Consumo Rotisserie">Consumo Rotisserie</option>
-                <option value="Consumo Fte. Caixa">Consumo Fte. Caixa</option>
-              </optgroup>
-              <optgroup label="Eventos">
-                <option value="Eventos - Degustação, Reuniões, etc">Eventos - Degustação, Reuniões, etc</option>
-              </optgroup>
-              <optgroup label="Matéria-Prima">
-                <option value="Matéria-Prima FLV">Matéria-Prima FLV</option>
-                <option value="Matéria-Prima Frios">Matéria-Prima Frios</option>
-                <option value="Matéria-Prima Padaria">Matéria-Prima Padaria</option>
-                <option value="Matéria-Prima Rotisserie">Matéria-Prima Rotisserie</option>
-              </optgroup>
-              <optgroup label="Perdas">
-                <option value="Perda Furto">Perda Furto</option>
-                <option value="Perda Produção">Perda Produção</option>
-                <option value="Perda Avaria">Perda Avaria</option>
-                <option value="Perda Vencimento">Perda Vencimento</option>
-                <option value="Perda Quebra Equipamento">Perda Quebra Equipamento</option>
-                <option value="Perda Qualidade FLV">Perda Qualidade FLV</option>
-              </optgroup>
-              <option value="Outros">Outros</option>
-            </select>
-          </div>
-          <div class="form-group">
-            <label for="filtroCodigo">Código</label>
-            <input class="form-control" id="filtroCodigo" placeholder="Código de barras" type="text"/>
-          </div>
-          <div class="form-group" style="justify-content: flex-end;">
-            <label>&nbsp;</label>
-            <div class="filters-checkboxes">
-              <label class="check-label">
-                <input id="filtroBaixaOk" type="checkbox"/> Baixados
-              </label>
-              <label class="check-label">
-                <input id="filtroPendente" type="checkbox"/> Pendentes
-              </label>
-            </div>
-          </div>
+      <!-- Summary + Toolbar -->
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px;flex-wrap:wrap;gap:6px;">
+        <div class="summary-bar" id="summaryBar" style="margin:0;flex:1;"></div>
+        <div style="display:flex;align-items:center;gap:10px;flex-shrink:0;">
+          <span id="countLabel" style="font-size:12px;color:var(--text-muted);"></span>
+          <button class="btn btn-outline" style="padding:5px 12px;font-size:13px;" onclick="carregarDados()">🔄 Atualizar</button>
         </div>
-      </div>
-
-      <!-- Summary -->
-      <div class="summary-bar" id="summaryBar"></div>
-
-      <!-- Toolbar -->
-      <div class="toolbar">
-        <div style="font-size: 13px; color: var(--text-muted);" id="countLabel"></div>
-        <button class="btn btn-outline" onclick="carregarDados()">🔄 Atualizar</button>
       </div>
 
       <!-- Table -->
