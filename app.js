@@ -2,7 +2,7 @@
 let acaoPendente = null;
 let itemIdPendente = null;
 let todosOsDados = [];
-let cacheProdutos = {}; // cache código_barras → descrição
+window.cacheProdutos = {}; // cache global: código_barras → descrição
 
 // ================== TABS ==================
 window.showTab = function(tabId) {
@@ -167,42 +167,33 @@ window.marcarComoBaixado = async function(id) {
 
 // ================== PRODUTOS (LOOKUP) ==================
 window.carregarCacheProdutos = async function() {
-  // Nunca lança exceção — garante que carregarDados() sempre continue
   try {
-    const resultado = await Promise.race([
-      supabase.from("produtos").select("codigo_barras, descricao"),
-      new Promise(resolve => setTimeout(() => resolve({ data: null, error: { message: "timeout" } }), 5000))
-    ]);
-
-    const { data, error } = resultado;
+    const { data, error, status } = await supabase
+      .from("produtos")
+      .select("codigo_barras, descricao");
 
     if (error) {
-      console.warn("⚠️ Produtos:", error.message);
-      console.warn("👉 Se for 'permission denied', execute no SQL Editor do Supabase:");
-      console.warn("   DROP POLICY IF EXISTS \"Leitura pública\" ON produtos;");
-      console.warn("   CREATE POLICY \"anon_select\" ON produtos FOR SELECT TO anon USING (true);");
-      return; // continua sem cache — não trava
-    }
-
-    if (!data || data.length === 0) {
-      console.warn("⚠️ Tabela produtos vazia.");
+      console.warn("Tabela 'produtos' não encontrada ou erro:", error.message, "status:", status);
+      console.warn("Detalhe:", JSON.stringify(error));
       return;
     }
 
-    cacheProdutos = {};
-    data.forEach(p => {
-      cacheProdutos[String(p.codigo_barras).trim()] = p.descricao;
+    window.cacheProdutos = {};
+    (data || []).forEach(p => {
+      const key = String(p.codigo_barras).trim();
+      window.cacheProdutos[key] = p.descricao;
     });
-    console.log(`✅ Produtos carregados: ${Object.keys(cacheProdutos).length} item(ns)`);
+    console.log(`✅ Produtos no cache: ${Object.keys(window.cacheProdutos).length}`);
   } catch (err) {
-    console.warn("⚠️ Erro ao carregar produtos (ignorado):", err.message);
-    // Nunca relança — carregarDados() sempre continua
+    console.warn("Erro ao carregar produtos:", err);
   }
 }
 
 function getDescricaoProduto(codigo) {
   if (!codigo) return null;
-  return cacheProdutos[String(codigo).trim()] || null;
+  const key = String(codigo).trim();
+  const result = window.cacheProdutos[key] || null;
+  return result;
 }
 
 // ================== FILTROS ==================
