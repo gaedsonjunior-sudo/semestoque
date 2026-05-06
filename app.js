@@ -427,7 +427,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (error) throw error;
 
-      showMessage("Transferência enviada com sucesso!", "success");
+      showMessage("Lançamento enviado com sucesso!", "success");
       e.target.reset();
       document.getElementById("imagePreview").style.display = "none";
       document.getElementById("outrosDescricaoGroup").style.display = "none";
