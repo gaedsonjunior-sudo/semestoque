@@ -2,7 +2,7 @@
 let acaoPendente = null;
 let itemIdPendente = null;
 let todosOsDados = [];
-let cacheProdutos = {}; // cache código_barras → descrição
+window.cacheProdutos = {}; // cache global
 
 // ================== TABS ==================
 window.showTab = function(tabId) {
@@ -167,32 +167,39 @@ window.marcarComoBaixado = async function(id) {
 
 // ================== PRODUTOS (LOOKUP) ==================
 window.carregarCacheProdutos = async function() {
+  // Paginado — Supabase limita 1000 por request
   try {
-    const { data, error, status } = await supabase
-      .from("produtos")
-      .select("codigo_barras, descricao");
+    window.cacheProdutos = {};
+    let from = 0;
+    const pageSize = 1000;
 
-    if (error) {
-      console.warn("Tabela 'produtos' não encontrada ou erro:", error.message, "status:", status);
-      console.warn("Detalhe:", JSON.stringify(error));
-      return;
+    while (true) {
+      const { data, error } = await supabase
+        .from("produtos")
+        .select("codigo_barras, descricao")
+        .range(from, from + pageSize - 1);
+
+      if (error) { console.warn("⚠️ Produtos erro:", error.message); break; }
+      if (!data || data.length === 0) break;
+
+      data.forEach(p => {
+        window.cacheProdutos[String(p.codigo_barras).trim()] = p.descricao;
+      });
+
+      if (data.length < pageSize) break;
+      from += pageSize;
     }
 
-    cacheProdutos = {};
-    (data || []).forEach(p => {
-      const key = String(p.codigo_barras).trim();
-      cacheProdutos[key] = p.descricao;
-    });
-    console.log(`Cache de produtos carregado: ${Object.keys(cacheProdutos).length} itens`, cacheProdutos);
+    console.log("✅ Total no cache:", Object.keys(window.cacheProdutos).length);
   } catch (err) {
-    console.warn("Erro ao carregar produtos:", err);
+    console.warn("⚠️ Erro produtos:", err.message);
   }
 }
 
 function getDescricaoProduto(codigo) {
   if (!codigo) return null;
   const key = String(codigo).trim();
-  return cacheProdutos[key] || null;
+  return window.cacheProdutos[String(codigo).trim()] || null;
 }
 
 // ================== FILTROS ==================
@@ -326,24 +333,15 @@ async function enviarEmailCadastro(registro) {
   try {
     const SUPABASE_URL = "https://ssziasopmhpszlztmbio.supabase.co";
     const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzemlhc29wbWhwc3psenRtYmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NDk0MDksImV4cCI6MjA4NTAyNTQwOX0.FqoNDC-XeWbgG-jkns6rk5z2_-OpWuefQ5esQid0FK8";
-
     const res = await fetch(`${SUPABASE_URL}/functions/v1/enviar-email-transferencias`, {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${ANON_KEY}`
-      },
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON_KEY}` },
       body: JSON.stringify({ registro })
     });
-
     const json = await res.json();
-    if (json.enviado) {
-      console.log("✅ E-mail enviado com sucesso");
-    } else {
-      console.warn("⚠️ E-mail não enviado:", json);
-    }
+    console.log(json.enviado ? "✅ E-mail enviado" : "⚠️ E-mail não enviado:", json);
   } catch (err) {
-    console.warn("⚠️ Erro ao enviar e-mail (ignorado):", err.message);
+    console.warn("⚠️ Erro e-mail (ignorado):", err.message);
   }
 }
 
@@ -429,12 +427,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       if (error) throw error;
 
-      showMessage("Lançamento enviado com sucesso!", "success");
+      showMessage("Transferência enviada com sucesso!", "success");
       e.target.reset();
       document.getElementById("imagePreview").style.display = "none";
       document.getElementById("outrosDescricaoGroup").style.display = "none";
 
-      // Envia e-mail em background (não bloqueia nem mostra erro ao usuário)
+      // Envia e-mail em background
       enviarEmailCadastro({ fiscal, setor: setorFinal, codigo_barras: codigoBarras, quantidade });
 
     } catch (err) {
