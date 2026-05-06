@@ -328,6 +328,23 @@ window.carregarDados = async function() {
   closeMessageModal();
 }
 
+// ================== ENVIO DE E-MAIL ==================
+async function enviarEmailCadastro(registro) {
+  try {
+    const SUPABASE_URL = "https://ssziasopmhpszlztmbio.supabase.co";
+    const ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InNzemlhc29wbWhwc3psenRtYmlvIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Njk0NDk0MDksImV4cCI6MjA4NTAyNTQwOX0.FqoNDC-XeWbgG-jkns6rk5z2_-OpWuefQ5esQid0FK8";
+    const res = await fetch(`${SUPABASE_URL}/functions/v1/enviar-email-transferencias`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "Authorization": `Bearer ${ANON_KEY}` },
+      body: JSON.stringify({ registro })
+    });
+    const json = await res.json();
+    console.log(json.enviado ? "✅ E-mail enviado" : "⚠️ E-mail não enviado:", json);
+  } catch (err) {
+    console.warn("⚠️ Erro e-mail (ignorado):", err.message);
+  }
+}
+
 // ================== INICIALIZAÇÃO ==================
 document.addEventListener('DOMContentLoaded', () => {
   console.log("=== APP CARREGADO ===");
@@ -414,6 +431,9 @@ document.addEventListener('DOMContentLoaded', () => {
       e.target.reset();
       document.getElementById("imagePreview").style.display = "none";
       document.getElementById("outrosDescricaoGroup").style.display = "none";
+
+      // Envia e-mail em background (não bloqueia o cadastro)
+      enviarEmailCadastro({ fiscal, setor: setorFinal, codigo_barras: codigoBarras, quantidade });
 
     } catch (err) {
       console.error(err);
