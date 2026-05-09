@@ -868,11 +868,20 @@ a.photo-link:hover { transform: scale(1.2); }
 
             <div class="form-group">
               <label>Foto do Código de Barras *</label>
-              <div class="file-zone" id="fileZone">
-                <input accept="image/*" id="foto" name="foto" required type="file" capture="environment"/>
-                <div class="file-zone-icon">📷</div>
-                <div class="file-zone-text">Tirar foto ou escolher da galeria</div>
-              </div>
+              <div style="display:flex;gap:8px;margin-bottom:8px;">
+                  <button type="button" onclick="document.getElementById('fotoCamera').click()"
+                    style="flex:1;padding:12px;background:var(--blue);color:white;border:none;border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;">
+                    📷 Tirar Foto
+                  </button>
+                  <button type="button" onclick="document.getElementById('fotoGaleria').click()"
+                    style="flex:1;padding:12px;background:var(--surface);color:var(--text-primary);border:1.5px solid var(--border);border-radius:var(--radius-sm);font-family:var(--font);font-size:14px;font-weight:600;cursor:pointer;">
+                    🖼️ Da Galeria
+                  </button>
+                </div>
+                <input accept="image/*" capture="environment" id="fotoCamera" type="file" style="display:none;"/>
+                <input accept="image/*" id="fotoGaleria" type="file" style="display:none;"/>
+                <input id="foto" type="file" style="display:none;"/>
+                <div id="fotoStatus" style="font-size:13px;color:var(--text-muted);text-align:center;padding:4px 0;">Nenhuma foto selecionada</div>
               <img class="image-preview" id="imagePreview"/>
             </div>
           </div>

@@ -361,13 +361,28 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById("quantidade").addEventListener("input", mascaraQuantidade);
   document.getElementById("editQuantidade").addEventListener("input", mascaraQuantidade);
 
-  // Preview foto
-  document.getElementById("foto").addEventListener("change", (e) => {
-    const file = e.target.files[0];
+  // Foto: câmera e galeria com input unificado
+  function handleFotoSelecionada(file) {
     if (!file) return;
+    // Guarda o arquivo no dataTransfer do input oculto
+    const dt = new DataTransfer();
+    dt.items.add(file);
+    document.getElementById("foto").files = dt.files;
+
     const preview = document.getElementById("imagePreview");
     preview.src = URL.createObjectURL(file);
     preview.style.display = "block";
+
+    const status = document.getElementById("fotoStatus");
+    if (status) status.textContent = "✅ " + file.name;
+  }
+
+  document.getElementById("fotoCamera").addEventListener("change", (e) => {
+    handleFotoSelecionada(e.target.files[0]);
+  });
+
+  document.getElementById("fotoGaleria").addEventListener("change", (e) => {
+    handleFotoSelecionada(e.target.files[0]);
   });
 
   // Enter no campo senha
@@ -396,7 +411,10 @@ document.addEventListener('DOMContentLoaded', () => {
       const outrosDescricao = document.getElementById("outrosDescricao").value.trim();
       const codigoBarras = document.getElementById("codigoBarras").value.trim();
       const quantidade = parseFloat(document.getElementById("quantidade").value.replace(",", "."));
-      const foto = document.getElementById("foto").files[0];
+      // Aceita foto do input unificado, câmera ou galeria
+      let foto = document.getElementById("foto").files[0];
+      if (!foto) foto = document.getElementById("fotoCamera").files[0];
+      if (!foto) foto = document.getElementById("fotoGaleria").files[0];
 
       if (!fiscal || !setorBase || !codigoBarras || !quantidade || !foto) {
         throw new Error("Preencha todos os campos obrigatórios");
@@ -429,8 +447,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
       showMessage("Lançamento enviado com sucesso!", "success");
       e.target.reset();
+      document.getElementById("fotoCamera").value = "";
+      document.getElementById("fotoGaleria").value = "";
       document.getElementById("imagePreview").style.display = "none";
       document.getElementById("outrosDescricaoGroup").style.display = "none";
+      const st = document.getElementById("fotoStatus");
+      if (st) st.textContent = "Nenhuma foto selecionada";
 
       // Envia e-mail em background (não bloqueia o cadastro)
       enviarEmailCadastro({ fiscal, setor: setorFinal, codigo_barras: codigoBarras, quantidade });
